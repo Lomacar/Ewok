@@ -1,0 +1,43 @@
+<template id="test-set" extends="section">
+    <script>
+        function clean(str){
+            return str.trim().replace(/\n */g,'\n')
+        }
+
+        export function mount(){
+            let example = this.querySelector('[slot=example]').firstElementChild
+                example = example.shadowRoot || example
+                example = clean(example.innerHTML)
+            let expected = clean(this.querySelector('[slot=expect]').innerHTML)
+            if (example == expected) {
+                this.shadowRoot.querySelector('.example').classList.add('pass')
+            } else {
+                this.shadowRoot.querySelector('.example').classList.add('fail')
+                console.group(this)
+                    console.debug(example)
+                    console.debug(expected)
+                console.groupEnd()
+            }
+        }
+    </script>
+    <style>
+        :host {display: flex;}
+        .cell {
+            width: 60%; 
+            margin: 5px; 
+            background-color: #ddd; 
+            padding: 0 1em;
+        }
+        .about {font-size: 1.5em;}
+        .pass {background-color: green;}
+        .fail {background-color: red;}
+        
+    </style>
+    <div class="about cell">
+        <slot name="about">
+    </div>
+    <div class="example cell">
+        <slot name="example"></slot>
+    </div>
+    <slot name="expect" hidden></slot>
+</template>

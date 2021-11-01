@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ewok Testing</title>
+    <style>
+        body {font-family: 'Arial'}
+    </style>
+</head>
+<body>
+    
+    <!-- THE TESTS -->
+    <section is="test-set">
+        <p slot="about">A basic test.</p>
+        <div slot="example">
+            <test-1></test-1>
+        </div>
+        <template slot="expect">
+            <p>I am basic!</p>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Same basic test with noshadow.</p>
+        <div slot="example">
+            <test-1 noshadow></test-1>
+        </div>
+        <template slot="expect">
+            <p>I am basic!</p>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Embedding components.</p>
+        <div slot="example">
+            <test-embeder></test-embeder>
+        </div>
+        <template slot="expect">
+            <p><strong>Nested:</strong></p>
+            <test-embedee></test-embedee>
+            <p><strong>Nested &amp; noshadow:</strong></p>
+            <test-embedee noshadow="">
+            <style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style>
+            <p>I am nested!</p>
+            </test-embedee><p>
+            <strong>Nested inside nested:</strong></p>
+            <test-embedee-2>
+            </test-embedee-2>
+        </template>
+    </section>
+
+
+    <!-- TEMPLATES -->
+    <template id="test-1">
+        <p>I am basic!</p>
+    </template>
+    
+    <template id="test-embeder">
+        <p><strong>Nested:</strong></p>
+        <test-embedee></test-embedee>
+        <p><strong>Nested & noshadow:</strong></p>
+        <test-embedee noshadow></test-embedee><p>
+        <strong>Nested inside nested:</strong></p>
+        <test-embedee-2></test-embedee>
+    </template>
+
+    <template id="test-embedee">
+        <style>
+            :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+            }
+        </style>
+        <p>I am nested!</p>
+    </template>
+
+    <template id="test-embedee-2">
+        <style>
+            :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+            }
+        </style>
+        (Level 1)
+        <test-embedee></test-embedee>
+    </template>
+
+
+
+
+
+
+
+
+
+
+
+
+    <ewok-import src="components/test-set.html"></ewok-import>
+
+    <script src="ewok.js"></script>
+    <script>
+        window.onload = function(){
+            Ewok.init()
+        }
+    </script>
+</body>
+</html>
