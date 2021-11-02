@@ -166,8 +166,10 @@ const Ewok = {
                     let promises = [parentPromise]
 
                     if (mod) {
+                        let deviousHook = `let host; export function ewokAttachHost(){host = this};
+                        `
                         //transfer code from template to element
-                        let blob = new Blob([templateScriptText], {type: 'application/javascript'})
+                        let blob = new Blob([deviousHook + templateScriptText], {type: 'application/javascript'})
                         promises.push( import(URL.createObjectURL(blob)) )
                         URL.revokeObjectURL(blob)                                                                      
                     }
@@ -193,6 +195,9 @@ const Ewok = {
                         //the parent (if applicable), and the module (if applicable) have been resolved
                         //and props have been set, so resolve self
                         this.resolver()
+
+                        // if component has a module assign 'this' (the component) to the host variable
+                        thismodule && thismodule.ewokAttachHost.apply(this)
 
                         // interpolate {{variables}} in the component
                         interpolate(clone,this.props)
@@ -283,14 +288,17 @@ const Ewok = {
             const regex = /\{\{[^{<"']+}}/g
 
             return template.replace(regex, (match) => {
-                const path = match.slice(2, -2).trim().split('|');
-                return getObjPath(path[0], variables, path[1]);
+                const path = match.slice(2, -2).split('|');
+                return getObjPath( path[0].trim(), variables, path[1] );
             });
         }
 
         //get the specified property or nested property of an object
         function getObjPath(path, obj, fallback = '') {
-             return path.split('.').reduce((res, key) => (typeof res[key]=='function' ? res[key]() : res[key]) || fallback, obj);
+             return path.split('.').reduce((res, key) => 
+                (typeof res[key]=='function' 
+                 ? res[key]() 
+                 : res[key]) || fallback, obj);
         }
 
         
