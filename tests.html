@@ -57,6 +57,60 @@
         </template>
     </section>
 
+    <section is="test-set">
+        <p slot="about">Basic interpolation.</p>
+        <div slot="example">
+            <test-interp-1 data-elmnt="Data-attribute on custom element."></test-interp-1>
+        </div>
+        <template slot="expect">
+            <style>
+            p {border: 1px solid black; padding: 3px}
+            </style>
+            <h4>Fallback for non-existent variable:</h4>
+            <p> fallback </p>
+            <h4>No fallback, should be blank:</h4>
+            <p></p>
+            <h4>Data-attribute on template:</h4>
+            <p>Data-attribute on template.</p>
+            <div>
+            <h4>Data-attribute from template as attribute:</h4>
+            <input type="text" value="Data-attribute on template." style="width: 70%;">
+            </div>
+            <h4>Data-attribute on custom element:</h4>
+            <p>Data-attribute on custom element.</p>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Basic interpolation: module variables.</p>
+        <div slot="example">
+            <test-interp-2 id="Kevin"></test-interp-2>
+        </div>
+        <template slot="expect">
+            <style>
+                p {border: 1px solid black; padding: 3px}
+                </style>
+                <div>
+                <h4>A message from the module:</h4>
+                <p>Module message.</p>
+                </div>
+                <div>
+                <h4>A number from the module:</h4>
+                <p><span>0<input type="range" max="10" value="3.141596">10</span> 3.141596</p>
+                </div>
+                <div>
+                <h4>Function output from the module:</h4>
+                <p>Module message. 3.141596</p>
+                </div>
+                <div>
+                <h4>Output from a function that reads a component property:</h4>
+                <p>Component id is Kevin</p>
+                </div>
+        </template>
+    </section>
+
+
+
 
     <!-- TEMPLATES -->
     <template id="test-1">
@@ -93,6 +147,54 @@
         </style>
         (Level 1)
         <test-embedee></test-embedee>
+    </template>
+
+    <template id="test-interp-1" data-tmplt="Data-attribute on template.">  
+        <style>
+            p {border: 1px solid black; padding: 3px}
+        </style>
+        <h4>Fallback for non-existent variable:</h4>
+        <p>{{ none | fallback }}</p>
+        <h4>No fallback, should be blank:</h4>
+        <p>{{ none }}</p>
+        <h4>Data-attribute on template:</h4>
+        <p>{{tmplt}}</p>
+        <div>
+            <h4>Data-attribute from template as attribute:</h4>
+            <input type="text" value="{{tmplt}}" style="width: 70%;">
+        </div>
+        <h4>Data-attribute on custom element:</h4>
+        <p>{{ elmnt | fallback }}</p>
+    </template>
+
+    <template id="test-interp-2">
+        <script>
+            export const msg = "Module message."
+            export const num = 3.141596
+            export const func = () => `${msg} ${num}`
+            export const func2 = function () {
+                return 'Component id is ' + host.id
+            }
+        </script>
+        <style>
+            p {border: 1px solid black; padding: 3px}
+        </style>
+        <div>
+            <h4>A message from the module:</h4>
+            <p>{{ msg | fallback }}</p>
+        </div>
+        <div>
+            <h4>A number from the module:</h4>
+            <p><span>0<input type="range" max="10" value="{{num}}">10</span> {{num}}</p>
+        </div>
+        <div>
+            <h4>Function output from the module:</h4>
+            <p>{{func}}</p>
+        </div>
+        <div>
+            <h4>Output from a function that reads a component property:</h4>
+            <p>{{func2}}</p>
+        </div>
     </template>
 
 

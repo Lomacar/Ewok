@@ -21,7 +21,8 @@
         }
     </script>
     <style>
-        :host {display: flex;}
+        * {box-sizing:border-box}
+        :host {display: flex; max-width: 80em;}
         .cell {
             width: 60%; 
             margin: 5px; 
@@ -31,7 +32,11 @@
         .about {font-size: 1.5em;}
         .pass {background-color: green;}
         .fail {background-color: red;}
-        
+        @media only screen and (max-width: 800px) {
+            :host {
+                display: block;
+            }
+        }
     </style>
     <div class="about cell">
         <slot name="about">
