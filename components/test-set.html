@@ -1,48 +1,53 @@
 <template id="test-set" extends="section">
     <script>
+
         function clean(str){
             return str.trim().replace(/\n */g,'\n')
         }
 
         export function mount(){
-            let example = this.querySelector('[slot=example]').firstElementChild
-                example = example.shadowRoot || example
-                example = clean(example.innerHTML)
-            let expected = clean(this.querySelector('[slot=expect]').innerHTML)
-            if (example == expected) {
-                this.shadowRoot.querySelector('.example').classList.add('pass')
-            } else {
-                this.shadowRoot.querySelector('.example').classList.add('fail')
-                console.group(this)
-                    console.debug(example)
-                    console.debug(expected)
-                console.groupEnd()
-            }
+            setTimeout(()=>{
+                let expected = clean(this.querySelector('[slot=expect]').innerHTML || '')
+                let example = this.querySelector('[slot=example]')
+                    example = example.shadowRoot || example
+                    example = clean( extractHTML(example.firstElementChild) || '')
+                if (example == expected) {
+                    this.shadowRoot.querySelector('.example').classList.add('pass')
+                } else {
+                    this.shadowRoot.querySelector('.example').classList.add('fail')
+                    console.group(this)
+                        console.debug(example)
+                        console.debug(expected)
+                    console.groupEnd()
+                }
+            },100)
         }
     </script>
     <style>
         * {box-sizing:border-box}
-        :host {display: flex; max-width: 80em;}
+        @media only screen and (min-width: 800px) {
+            :host {display: flex; max-width: 80em;}
+            .cell { width: 60%; }
+        }
         .cell {
-            width: 60%; 
             margin: 5px; 
             background-color: #ddd; 
-            padding: 0 1em;
+            padding: 0.5em;
         }
-        .about {font-size: 1.5em;}
+        .about {font-size: 1.2rem; padding: 0 1em;}
+        .about ::slotted(p) {margin: 0.5em;}
         .pass {background-color: green;}
         .fail {background-color: red;}
-        @media only screen and (max-width: 800px) {
-            :host {
-                display: block;
-            }
-        }
+        .pass-label, .fail-label {display: none;}
+        .example.pass .pass-label, .example.fail .fail-label {display: inline;}
+        summary {font-size: 1.2rem;}
     </style>
     <div class="about cell">
         <slot name="about">
     </div>
-    <div class="example cell">
+    <details class="example cell">
+        <summary><span class="pass-label">PASS</span><span class="fail-label">FAIL</span></summary>
         <slot name="example"></slot>
-    </div>
+    </details>
     <slot name="expect" hidden></slot>
 </template>

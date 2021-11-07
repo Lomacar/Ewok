@@ -18,7 +18,7 @@
             <test-1></test-1>
         </div>
         <template slot="expect">
-            <p>I am basic!</p>
+            <test-1><p>I am basic!</p></test-1>
         </template>
     </section>
 
@@ -28,8 +28,9 @@
             <test-1 noshadow></test-1>
         </div>
         <template slot="expect">
-            <p>I am basic!</p>
+            <test-1 noshadow=""><p>I am basic!</p></test-1>
         </template>
+        <p slot="expect">Just messing.</p>
     </section>
 
     <section is="test-set">
@@ -38,22 +39,31 @@
             <test-embeder></test-embeder>
         </div>
         <template slot="expect">
-            <p><strong>Nested:</strong></p>
-            <test-embedee></test-embedee>
-            <p><strong>Nested &amp; noshadow:</strong></p>
-            <test-embedee noshadow="">
-            <style>
+            <test-embeder><p><strong>Nested:</strong></p><test-embedee><style>
             :host {
             border: 1px solid black;
             padding: 3px; margin: 3px;
             display: block;
             }
-            </style>
-            <p>I am nested!</p>
-            </test-embedee><p>
-            <strong>Nested inside nested:</strong></p>
-            <test-embedee-2>
-            </test-embedee-2>
+            </style><p>I am nested!</p></test-embedee><p><strong>Nested &amp; noshadow:</strong></p><test-embedee noshadow=""><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee><p><strong>Nested inside nested:</strong></p><test-embedee-2><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style>(Level 1)<test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee></test-embedee-2></test-embeder>
         </template>
     </section>
 
@@ -65,19 +75,7 @@
         <template slot="expect">
             <style>
             p {border: 1px solid black; padding: 3px}
-            </style>
-            <h4>Fallback for non-existent variable:</h4>
-            <p> fallback </p>
-            <h4>No fallback, should be blank:</h4>
-            <p></p>
-            <h4>Data-attribute on template:</h4>
-            <p>Data-attribute on template.</p>
-            <div>
-            <h4>Data-attribute from template as attribute:</h4>
-            <input type="text" value="Data-attribute on template." style="width: 70%;">
-            </div>
-            <h4>Data-attribute on custom element:</h4>
-            <p>Data-attribute on custom element.</p>
+            </style><h4>Fallback for non-existent variable:</h4><p> fallback </p><h4>No fallback, should be blank:</h4><p></p><h4>Data-attribute on template:</h4><p>Data-attribute on template.</p><h4>Data-attribute from template as attribute:</h4><input type="text" value="Data-attribute on template." style="width: 70%;"><h4>Data-attribute on custom element:</h4><p>Data-attribute on custom element.</p>
         </template>
     </section>
 
@@ -88,26 +86,102 @@
         </div>
         <template slot="expect">
             <style>
-                p {border: 1px solid black; padding: 3px}
-                </style>
-                <div>
-                <h4>A message from the module:</h4>
-                <p>Module message.</p>
-                </div>
-                <div>
-                <h4>A number from the module:</h4>
-                <p><span>0<input type="range" max="10" value="3.141596">10</span> 3.141596</p>
-                </div>
-                <div>
-                <h4>Function output from the module:</h4>
-                <p>Module message. 3.141596</p>
-                </div>
-                <div>
-                <h4>Output from a function that reads a component property:</h4>
-                <p>Component id is Kevin</p>
-                </div>
+            p {border: 1px solid black; padding: 3px}
+            </style><h4>A message from the module:</h4><p>Module message.</p><h4>A number from the module:</h4>0<input type="range" max="10" value="3.141596" style="vertical-align: bottom;">10- 3.141596<h4>Function output from the module:</h4><p>Module message. 3.141596</p><h4>Output from a function that reads a component property:</h4><p>Component id is Kevin</p>
         </template>
     </section>
+
+    <section is="test-set">
+        <p slot="about">Importing and embedding</p>
+        <div slot="example">
+            <test-import lang="en"></test-import>
+        </div>
+        <template slot="expect">
+            <h4>Imported template with nested non-imported component.</h4><strong>Nested:</strong><style>
+                :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+                }
+                </style><p>I am nested!</p><strong>Nested &amp; noshadow:</strong><style>
+                :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+                }
+                </style><p>I am nested!</p><strong>Nested inside nested:</strong><style>
+                :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+                }
+                </style>(Level 1)<style>
+                :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+                }
+                </style><p>I am nested!</p><h4>Non-imported template which embeds imported component.</h4><style>
+                :host {
+                border: 1px solid black;
+                padding: 3px; margin: 3px;
+                display: block;
+                }
+                </style><p>I am imported and nested!</p><h4>Importing the test-set component into this imported template.</h4><style>
+                * {box-sizing:border-box}
+                @media only screen and (min-width: 800px) {
+                :host {display: flex; max-width: 80em;}
+                .cell { width: 60%; }
+                }
+                .cell {
+                margin: 5px; 
+                background-color: #ddd; 
+                padding: 1em;
+                }
+                .about {font-size: 1.5em;}
+                .pass {background-color: green;}
+                .fail {background-color: red;}
+                </style><p slot="about">A basic test.</p><p>I am basic!</p><template slot="expect">
+                <p>I am basic!</p>
+                </template>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Complicated interpolation</p>
+        <div slot="example">
+            <!-- Test comment -->
+            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="$testdata"></test-interp-3>
+        </div>
+        <template slot="expect">
+            <style>
+            p {border: 1px solid black; padding: 3px}
+            </style><h4>A message from the module is overriden by a message from component:</h4><p>Hello from the component.</p><h4>Some data from a global variable referenced on the component:</h4><li>Name: Bilbo Baggins</li><li>Address: Bag End, Hobbiton, Shire, Middle Earth</li><li>Age: 111</li><h4>Some data from a global variable referenced on the template:</h4><p>Numbers: 1,2,3,4,5</p><p>Function output: Bilbo Baggins was 111 years old.</p><h4>Interpolation of module function in a nested component:</h4>Nested:<em>Component lang is en</em>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Messing with slots.</p>
+        <div slot="example">
+            <test-slots lang="en" data-msg="Hello from the component." data-elmnt="$testdata">
+                <span slot="slotty">This is a mighty fine slot.</span>
+            </test-slots>
+        </div>
+        <template slot="expect">
+            <test-slots lang="en" data-msg="Hello from the component." data-elmnt="$testdata" data-slotvar="I'm a slotted var, from the parent template."><style>
+            details, test-slots-2 {border: dotted 1px black; margin: 0.5em; padding: 0.5em; display: block;}
+            details[open] summary {border-bottom: 1px solid black; margin-bottom: 0.5em;padding-bottom: 0.5em;}
+            </style><details><summary>This is the test-slot template.</summary>[<span slot="slotty">This is a mighty fine slot.</span>]</details><test-slots-2 data-slotvarcomp="This is from a {{var}} on the component." data-slotvardefault="I am a {{var}} in the default content of an unslotted slot. Weird."><details open=""><summary>This is test-slot-2, embedded in test-slot...</summary><div>Slot 1 [<span slot="slot1">I am slotted!</span>]</div><div>Slot 2 [<span slot="slot2">I'm a slotted var, from the parent template.</span>]</div><div>Slot 3 [<span slot="slot3">A custom element in a slot!<test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee></span>]</div><div>Slot 99 [I am a {{var}} in the default content of an unslotted slot. Weird.]</div></details></test-slots-2><aside>Note: variables in slots can't be interpolated from the component they belong to.</aside></test-slots>
+        </template>
+    </section>
+
+
 
 
 
@@ -124,6 +198,10 @@
         <test-embedee noshadow></test-embedee><p>
         <strong>Nested inside nested:</strong></p>
         <test-embedee-2></test-embedee>
+    </template>
+
+    <template id="test-embeder-2">
+        <test-import-embed></test-import-embed>
     </template>
 
     <template id="test-embedee">
@@ -185,7 +263,11 @@
         </div>
         <div>
             <h4>A number from the module:</h4>
-            <p><span>0<input type="range" max="10" value="{{num}}">10</span> {{num}}</p>
+            <p>
+                <span>
+                    0 <input type="range" max="10" value="{{num}}" style="vertical-align: bottom;"> 10
+                </span> - {{num}}
+            </p>
         </div>
         <div>
             <h4>Function output from the module:</h4>
@@ -204,16 +286,75 @@
 
 
 
-
-
-
-
     <ewok-import src="components/test-set.html"></ewok-import>
+    <ewok-import src="components/test-components.html"></ewok-import>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/cash-dom@8.1.0/dist/cash.min.js"></script>
 
     <script src="ewok.js"></script>
     <script>
-        window.onload = function(){
-            Ewok.init()
+        var testdata = {
+            numbers: [1,2,3,4,5],
+            person: {
+                name: "Bilbo Baggins",
+                address: "Bag End, Hobbiton, Shire, Middle Earth",
+                age: 111
+            },
+            someFunction(){
+                return `Function output: ${this.person.name} was ${this.person.age} years old.`
+            }
+        }
+
+        function extractHTML(node) {
+            
+            // return a blank string if not a valid node
+            if (!node) return ''
+
+            // if it is a text node just return the trimmed textContent
+            if (node.nodeType===3) return node.textContent.trim()
+
+            //beyond here, only deal with element nodes
+            if (node.nodeType!==1) return ''
+
+            let html = ''
+
+            // clone the node for its outer html sans inner html
+            let outer = node.cloneNode()
+
+            // if the node has a shadowroot, jump into it
+            node = node.shadowRoot || node
+            
+            if (node.children.length) {
+                
+                // we checked for children but now iterate over childNodes
+                // which includes #text nodes (and even other things)
+                for (let n of node.childNodes) {
+                    
+                    // if the node is a slot
+                    if (n.assignedNodes) {
+                        
+                        // an assigned slot
+                        if (n.assignedNodes()[0]){
+                            // Can there be more than 1 assigned node??
+                            html += extractHTML(n.assignedNodes()[0])
+
+                        // an unassigned slot
+                        } else { html += n.innerHTML }                    
+
+                    // node is not a slot, recurse
+                    } else { html += extractHTML(n) }
+                }
+
+            // node has no children
+            } else { html = node.innerHTML }
+
+            // insert all the (children's) innerHTML 
+            // into the (cloned) parent element
+            // and return the whole package
+            outer.innerHTML = html
+            return outer.outerHTML
+            
         }
     </script>
 </body>
