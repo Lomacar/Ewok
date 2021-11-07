@@ -71,7 +71,7 @@ const Ewok = {
 
 
 
-            console.debug("🚩 "+elementName);
+            //console.debug("🚩 "+elementName);
 
             //get the type of element to extend, if the 'extends' attribute is set on the template
             const ext = templateAttrs.get('extends')
@@ -98,7 +98,7 @@ const Ewok = {
                 constructor() {
                     super();
 
-                    console.debug("🏗 "+elementName);
+                    //console.debug("🏗 "+elementName);
 
                     if (!this.hasAttribute('noshadow')) {                        
                         this.attachShadow({mode: 'open'})
@@ -115,7 +115,7 @@ const Ewok = {
                     let event = new Event('connecting', {node: this});
                     this.dispatchEvent(event)
 
-                    console.debug("⚡ "+elementName);
+                    //console.debug("⚡ "+elementName);
 
                     this.setAttribute('loading', '')
 
@@ -168,7 +168,7 @@ const Ewok = {
                     if (mod) {
                         let deviousHook = `let host; export function ewokAttachHost(){host = this};
                         `
-                        //transfer code from template to element
+                        //transfer js code from template to element
                         let blob = new Blob([deviousHook + templateScriptText], {type: 'application/javascript'})
                         promises.push( import(URL.createObjectURL(blob)) )
                         URL.revokeObjectURL(blob)                                                                      
@@ -199,8 +199,10 @@ const Ewok = {
                         // if component has a module assign 'this' (the component) to the host variable
                         thismodule && thismodule.ewokAttachHost.apply(this)
 
-                        // interpolate {{variables}} in the component
+                        // interpolate {{variables}} in the template
                         interpolate(clone,this.props)
+                        // interpolate any HTML (slots) in the custom element instance
+                        if (this.shadowRoot) interpolate(this,this.props)
                         
                         // attach props to every sub-element
                         clone.querySelectorAll('*').forEach((el) => {
@@ -221,7 +223,7 @@ const Ewok = {
 
                     })                
                     
-                    console.debug("✅ "+elementName);
+                    //console.debug("✅ "+elementName);
 
                     event = new Event('connected', {detail: elementName});
                     event.elem = elementName
@@ -230,11 +232,15 @@ const Ewok = {
                     //// functions //////////////////////////////////////////////////////////////
 
                     function interpolate (attachPoint, props){
-        
                         [...attachPoint.children].forEach((x)=>{
                             if (x.nodeName != 'SCRIPT'){
                                 let html = x.innerHTML
                                 if ( html && html.includes('{{') ) x.innerHTML = handlebars(html, props)
+                                if ( html && html.includes('{*') ) {
+                                    // this ridiculous regex removes single astrixes between curly braces
+                                    // i.e {**{xyz}**} becomes {*{xyz}*}
+                                    x.innerHTML = x.innerHTML.replace(/(\{\**)\*(\{)(.*)(\}\**)\*(\})/g, '$1$2$3$4$5')
+                                }
                             }
                         })
                     }
@@ -262,7 +268,7 @@ const Ewok = {
                     }
                 }//connectedCallback
                             
-            } //anonymous class                
+            } //anonymous class
                     
             customElements.define(elementName, Ewok.classes[elementName], ext && {extends: ext})
             
@@ -412,4 +418,8 @@ class EwokImportContent extends HTMLElement {
 
 if ('customElements' in window) {
     customElements.define('ewok-import', EwokImportContent);
+}
+
+window.onload = function(){
+    Ewok.init()
 }
