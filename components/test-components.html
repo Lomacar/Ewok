@@ -1,0 +1,104 @@
+<template id="test-import">
+    <h4>Imported template with nested non-imported component.</h4>
+    <test-embeder></test-embeder>
+    <h4>Non-imported template which embeds imported component.</h4>
+    <test-embeder-2></test-embeder-2>
+    <h4>Importing the test-set component into this imported template.</h4>
+    <section is="test-set">
+        <p slot="about">A basic test.</p>
+        <div slot="example">
+            <test-1></test-1>
+        </div>
+        <template slot="expect">
+            <test-1><p>I am basic!</p></test-1>
+        </template>
+    </section>
+</template>
+
+<template id="test-import-embed">
+    <style>
+        :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+        }
+    </style>
+    <p>I am imported and nested!</p>
+</template>
+
+<template id="test-interp-3" data-tmplt="$testdata">
+    <script>
+        export const msg = "Module message."
+
+        export const func = function () {
+            return 'Component lang is ' + host.lang
+        }
+
+        export function mount(){
+            host.setAttribute('data-foo', "Fooey!")
+        }
+    </script>
+    <style>
+        p {border: 1px solid black; padding: 3px}
+    </style>
+    <div>
+        <h4>A message from the module is overriden by a message from component:</h4>
+        <p>{{ msg | fallback }}</p>
+        <h4>Some data from a global variable referenced on the component:</h4>
+        <ul>
+            <li>Name: {{elmnt.person.name}}</li>
+            <li>Address: {{elmnt.person.address}}</li>
+            <li>Age: {{elmnt.person.age}}</li>
+        </ul>
+        <h4>Some data from a global variable referenced on the template:</h4>
+        <p>Numbers: {{ tmplt.numbers | fallback }}</p>
+        <p>{{tmplt.someFunction}}</p>
+    </div>
+    <div>
+        <h4>Interpolation of module function in a nested component:</h4>
+        <aside>
+            <test-interp-embed></test-interp-embed>
+        </aside>
+    </div>
+</template>
+
+<template id="test-interp-embed">
+    <p>Nested: <em>{{func}}</em></p>
+</template>
+
+<template id="test-slots" data-slotvar="I'm a slotted var, from the parent template.">
+    <style>
+        details, test-slots-2 {border: dotted 1px black; margin: 0.5em; padding: 0.5em; display: block;}
+        details[open] summary {border-bottom: 1px solid black; margin-bottom: 0.5em;padding-bottom: 0.5em;}
+    </style>
+    <details><summary>This is the test-slot template.</summary>
+        [ <slot name="slotty">Default content.</slot> ]
+    </details>
+    <test-slots-2 data-slotvarcomp="This is from a var on the component." 
+                  data-slotvardefault="I am a var in the default content of an unslotted slot. Weird.">
+        <span slot="slot1">I am slotted!</span>
+        <span slot="slot2">{{slotvar}}</span>
+        <span slot="slot3">{*{ slotvarcomp }*}</span>
+        <span slot="slot4">test-slots-2 nested in test-slots-2!!!
+            <test-slots-2 data-slotvarcomp="This is from a var on the NESTED component.">
+                <div slot="slot1">
+                    (For this level, only one slot has been filled.)
+                    <br>{**{ slotvarcomp }**}
+                </div>
+            </test-slots-2>
+        </span>
+    </test-slots-2>
+</template>
+
+<template id="test-slots-2">
+    <script>
+        export const modvar = "I'm a module variable from test-slots-2"
+    </script>
+    <details open><summary>This is test-slot-2, embedded in test-slot...</summary>
+        <div>Slot 1 [ <slot name="slot1"></slot> ]</div>
+        <div>Slot 2 [ <slot name="slot2"></slot> ]</div>
+        <div>Slot 3 [ <slot name="slot3"></slot> ]</div>
+        <div>Slot 4 [ <slot name="slot4"></slot> ]</div>
+        <div>Slot 99 [ <slot name="slot99">{{slotvardefault|fallback}}</slot> ]</div>
+    </details>
+</template>
