@@ -73,9 +73,9 @@
             <test-interp-1 data-elmnt="Data-attribute on custom element."></test-interp-1>
         </div>
         <template slot="expect">
-            <style>
+            <test-interp-1 data-elmnt="Data-attribute on custom element." data-tmplt="Data-attribute on template."><style>
             p {border: 1px solid black; padding: 3px}
-            </style><h4>Fallback for non-existent variable:</h4><p> fallback </p><h4>No fallback, should be blank:</h4><p></p><h4>Data-attribute on template:</h4><p>Data-attribute on template.</p><h4>Data-attribute from template as attribute:</h4><input type="text" value="Data-attribute on template." style="width: 70%;"><h4>Data-attribute on custom element:</h4><p>Data-attribute on custom element.</p>
+            </style><h4>Fallback for non-existent variable:</h4><p> fallback </p><h4>No fallback, should be blank:</h4><p></p><h4>Data-attribute on template:</h4><p>Data-attribute on template.</p><div><h4>Data-attribute from template as attribute:</h4><input type="text" value="Data-attribute on template." style="width: 70%;"></div><h4>Data-attribute on custom element:</h4><p>Data-attribute on custom element.</p></test-interp-1>
         </template>
     </section>
 
@@ -85,9 +85,9 @@
             <test-interp-2 id="Kevin"></test-interp-2>
         </div>
         <template slot="expect">
-            <style>
+            <test-interp-2 id="Kevin"><style>
             p {border: 1px solid black; padding: 3px}
-            </style><h4>A message from the module:</h4><p>Module message.</p><h4>A number from the module:</h4>0<input type="range" max="10" value="3.141596" style="vertical-align: bottom;">10- 3.141596<h4>Function output from the module:</h4><p>Module message. 3.141596</p><h4>Output from a function that reads a component property:</h4><p>Component id is Kevin</p>
+            </style><div><h4>A message from the module:</h4><p>Module message.</p></div><div><h4>A number from the module:</h4><p><span>0<input type="range" max="10" value="3.141596" style="vertical-align: bottom;">10</span>- 3.141596</p></div><div><h4>Function output from the module:</h4><p>Module message. 3.141596</p></div><div><h4>Output from a function that reads a component property:</h4><p>Component id is Kevin</p></div></test-interp-2>
         </template>
     </section>
 
@@ -97,53 +97,58 @@
             <test-import lang="en"></test-import>
         </div>
         <template slot="expect">
-            <h4>Imported template with nested non-imported component.</h4><strong>Nested:</strong><style>
-                :host {
-                border: 1px solid black;
-                padding: 3px; margin: 3px;
-                display: block;
-                }
-                </style><p>I am nested!</p><strong>Nested &amp; noshadow:</strong><style>
-                :host {
-                border: 1px solid black;
-                padding: 3px; margin: 3px;
-                display: block;
-                }
-                </style><p>I am nested!</p><strong>Nested inside nested:</strong><style>
-                :host {
-                border: 1px solid black;
-                padding: 3px; margin: 3px;
-                display: block;
-                }
-                </style>(Level 1)<style>
-                :host {
-                border: 1px solid black;
-                padding: 3px; margin: 3px;
-                display: block;
-                }
-                </style><p>I am nested!</p><h4>Non-imported template which embeds imported component.</h4><style>
-                :host {
-                border: 1px solid black;
-                padding: 3px; margin: 3px;
-                display: block;
-                }
-                </style><p>I am imported and nested!</p><h4>Importing the test-set component into this imported template.</h4><style>
-                * {box-sizing:border-box}
-                @media only screen and (min-width: 800px) {
-                :host {display: flex; max-width: 80em;}
-                .cell { width: 60%; }
-                }
-                .cell {
-                margin: 5px; 
-                background-color: #ddd; 
-                padding: 1em;
-                }
-                .about {font-size: 1.5em;}
-                .pass {background-color: green;}
-                .fail {background-color: red;}
-                </style><p slot="about">A basic test.</p><p>I am basic!</p><template slot="expect">
-                <p>I am basic!</p>
-                </template>
+            <test-import lang="en"><h4>Imported template with nested non-imported component.</h4><test-embeder><p><strong>Nested:</strong></p><test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee><p><strong>Nested &amp; noshadow:</strong></p><test-embedee noshadow=""><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee><p><strong>Nested inside nested:</strong></p><test-embedee-2><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style>(Level 1)<test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee></test-embedee-2></test-embeder><h4>Non-imported template which embeds imported component.</h4><test-embeder-2><test-import-embed><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am imported and nested!</p></test-import-embed></test-embeder-2><h4>Importing the test-set component into this imported template.</h4><section is="test-set" extends="section"><style>
+            * {box-sizing:border-box}
+            @media only screen and (min-width: 800px) {
+            :host {display: flex; max-width: 80em;}
+            .about {width: 40%}
+            .example {width: 60%}
+            }
+            .cell {
+            margin: 5px; 
+            background-color: #ddd; 
+            padding: 0.5em;
+            }
+            .about {font-size: 1.2rem; padding: 0 1em;}
+            .about ::slotted(p) {margin: 0.5em;}
+            .pass {background-color: green;}
+            .fail {background-color: red;}
+            .pass-label, .fail-label {display: none;}
+            .example.pass .pass-label, .example.fail .fail-label {display: inline;}
+            summary {font-size: 1.2rem;}
+            </style><div class="about cell"><p slot="about">A basic test.</p></div><details class="example cell"><summary><span class="pass-label">PASS</span><span class="fail-label">FAIL</span></summary><div slot="example"><test-1><p>I am basic!</p></test-1></div></details><template slot="expect">
+            <test-1><p>I am basic!</p></test-1>
+            </template></section></test-import>
         </template>
     </section>
 
@@ -154,9 +159,9 @@
             <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="$testdata"></test-interp-3>
         </div>
         <template slot="expect">
-            <style>
+            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="$testdata" data-tmplt="$testdata" data-foo="Fooey!"><style>
             p {border: 1px solid black; padding: 3px}
-            </style><h4>A message from the module is overriden by a message from component:</h4><p>Hello from the component.</p><h4>Some data from a global variable referenced on the component:</h4><li>Name: Bilbo Baggins</li><li>Address: Bag End, Hobbiton, Shire, Middle Earth</li><li>Age: 111</li><h4>Some data from a global variable referenced on the template:</h4><p>Numbers: 1,2,3,4,5</p><p>Function output: Bilbo Baggins was 111 years old.</p><h4>Interpolation of module function in a nested component:</h4>Nested:<em>Component lang is en</em>
+            </style><div><h4>A message from the module is overriden by a message from component:</h4><p>Hello from the component.</p><h4>Some data from a global variable referenced on the component:</h4><ul><li>Name: Bilbo Baggins</li><li>Address: Bag End, Hobbiton, Shire, Middle Earth</li><li>Age: 111</li></ul><h4>Some data from a global variable referenced on the template:</h4><p>Numbers: 1,2,3,4,5</p><p>Function output: Bilbo Baggins was 111 years old.</p></div><div><h4>Interpolation of module function in a nested component:</h4><aside><test-interp-embed><p>Nested:<em>(Outer) component lang is en</em></p></test-interp-embed></aside></div></test-interp-3>
         </template>
     </section>
 
@@ -171,13 +176,17 @@
             <test-slots lang="en" data-msg="Hello from the component." data-elmnt="$testdata" data-slotvar="I'm a slotted var, from the parent template."><style>
             details, test-slots-2 {border: dotted 1px black; margin: 0.5em; padding: 0.5em; display: block;}
             details[open] summary {border-bottom: 1px solid black; margin-bottom: 0.5em;padding-bottom: 0.5em;}
-            </style><details><summary>This is the test-slot template.</summary>[<span slot="slotty">This is a mighty fine slot.</span>]</details><test-slots-2 data-slotvarcomp="This is from a {{var}} on the component." data-slotvardefault="I am a {{var}} in the default content of an unslotted slot. Weird."><details open=""><summary>This is test-slot-2, embedded in test-slot...</summary><div>Slot 1 [<span slot="slot1">I am slotted!</span>]</div><div>Slot 2 [<span slot="slot2">I'm a slotted var, from the parent template.</span>]</div><div>Slot 3 [<span slot="slot3">A custom element in a slot!<test-embedee><style>
-            :host {
-            border: 1px solid black;
-            padding: 3px; margin: 3px;
-            display: block;
-            }
-            </style><p>I am nested!</p></test-embedee></span>]</div><div>Slot 99 [I am a {{var}} in the default content of an unslotted slot. Weird.]</div></details></test-slots-2><aside>Note: variables in slots can't be interpolated from the component they belong to.</aside></test-slots>
+            </style><details><summary>This is the test-slot template.</summary>[<span slot="slotty">This is a mighty fine slot.</span>]</details><test-slots-2 data-slotvarcomp="This is from a var on the component." data-slotvardefault="I am a var in the default content of an unslotted slot. Weird."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">I am slotted!</span>]</div><div>Slot 2 [<span slot="slot2">I'm a slotted var, from the parent template.</span>]</div><div>Slot 3 [<span slot="slot3">This is from a var on the component. - I'm a module variable from test-slots-2</span>]</div><div>Slot 4 [<span slot="slot4">test-slots-2 nested in test-slots-2!...<test-slots-2 data-slotvarcomp="This is from a var on the NESTED component."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">This is from a var on the NESTED component.</span>]</div><div>Slot 2 [<span slot="slot2">I'm a module variable from test-slots-2</span>]</div><div>Slot 3 [<span slot="slot3">intentionally blank</span>]</div><div>Slot 4 [<span slot="slot4">intentionally blank</span>]</div><div>Slot 99 [fallback]</div></details></test-slots-2></span>]</div><div>Slot 99 [I am a var in the default content of an unslotted slot. Weird.]</div></details></test-slots-2></test-slots>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">More module variables, global variables, and shared modules.</p>
+        <div slot="example">
+            <test-modules></test-modules>
+        </div>
+        <template slot="expect">
+            <test-modules><p>Function output: Bilbo Baggins was 111 years old.</p><p>4 × 4 = 16</p><p>Oh hey, I'm a global variable.</p><p>This button calls a function on a private module which uses a variable in a shared module.</p><button id="greeter" onclick="this.props.greet()">Hello, says Bilbo Baggins.</button><br><p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p><input id="foober" type="text" value="foo" onclick="this.props.foobar(this)"></test-modules>
         </template>
     </section>
 
@@ -305,6 +314,13 @@
                 return `Function output: ${this.person.name} was ${this.person.age} years old.`
             }
         }
+
+        function mathSquare (num) {
+            return num*num
+        }
+
+        var globalVar = "Oh hey, I'm a global variable."
+        var $global = "Teehee"
 
         function extractHTML(node) {
             

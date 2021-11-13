@@ -31,7 +31,7 @@
         export const msg = "Module message."
 
         export const func = function () {
-            return 'Component lang is ' + host.lang
+            return 'component lang is ' + host.lang
         }
 
         export function mount(){
@@ -63,7 +63,7 @@
 </template>
 
 <template id="test-interp-embed">
-    <p>Nested: <em>{{func}}</em></p>
+    <p>Nested: <em>(Outer) {{func}}</em></p>
 </template>
 
 <template id="test-slots" data-slotvar="I'm a slotted var, from the parent template.">
@@ -78,13 +78,13 @@
                   data-slotvardefault="I am a var in the default content of an unslotted slot. Weird.">
         <span slot="slot1">I am slotted!</span>
         <span slot="slot2">{{slotvar}}</span>
-        <span slot="slot3">{*{ slotvarcomp }*}</span>
-        <span slot="slot4">test-slots-2 nested in test-slots-2!!!
+        <span slot="slot3">{{ slotvarcomp }} - {{modvar}}</span>
+        <span slot="slot4">test-slots-2 nested in test-slots-2!...
             <test-slots-2 data-slotvarcomp="This is from a var on the NESTED component.">
-                <div slot="slot1">
-                    (For this level, only one slot has been filled.)
-                    <br>{**{ slotvarcomp }**}
-                </div>
+                <span slot="slot1">{*{ slotvarcomp }*}</span>
+                <span slot="slot2">{*{modvar}*}</span>
+                <span slot="slot3">intentionally blank</span>
+                <span slot="slot4">intentionally blank</span>
             </test-slots-2>
         </span>
     </test-slots-2>
@@ -94,11 +94,45 @@
     <script>
         export const modvar = "I'm a module variable from test-slots-2"
     </script>
-    <details open><summary>This is test-slot-2, embedded in test-slot...</summary>
+    <details open><summary>This is test-slot-2...</summary>
         <div>Slot 1 [ <slot name="slot1"></slot> ]</div>
         <div>Slot 2 [ <slot name="slot2"></slot> ]</div>
         <div>Slot 3 [ <slot name="slot3"></slot> ]</div>
         <div>Slot 4 [ <slot name="slot4"></slot> ]</div>
         <div>Slot 99 [ <slot name="slot99">{{slotvardefault|fallback}}</slot> ]</div>
     </details>
+</template>
+
+<template id="test-modules">
+    <script>
+        export const name = testdata.person.name
+    </script>
+    <script shared>
+        const num = 4
+        const someFunc = testdata.someFunction.bind(testdata)
+        const anotherFunc = ()=>mathSquare(num)
+        function mount(){
+            this.shadowRoot.querySelector('#greeter').click()
+            this.shadowRoot.querySelector('#foober').click()
+        }
+        export function foobar(el){
+            el.host.shadowRoot.querySelector('#foober').value = this.bar
+        }
+        
+        const greeting = "Hello"
+        export {someFunc, anotherFunc, num, greeting, mount}
+    </script>
+    <p>{{someFunc}}</p>
+    <p>{{num}} × {{num}} = {{anotherFunc}}</p>
+    <p>{{$globalVar}}</p>
+    <p>This button calls a function on a private module which uses a variable in a shared module.</p>
+    <button id="greeter" onclick="this.props.greet()">Click for greeting.</button><br>
+    <p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p>
+    <input id="foober" type="text" value="foo" onclick="this.props.foobar(this)">
+    <script>
+        export let bar = "bar"
+        export function greet() {
+            host.shadowRoot.querySelector('#greeter').innerHTML = `${this.greeting}, says ${name}.`
+        }
+    </script>
 </template>

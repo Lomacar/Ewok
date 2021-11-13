@@ -1,6 +1,7 @@
 const Ewok = {
     dependencies: [],
     classes: {},
+    sharedModules: {},
     
     init(options, selection = "template"){
         plates = document.querySelectorAll(selection)
@@ -60,15 +61,31 @@ const Ewok = {
                                         ))
             
             //prepare script from template
-            let mod = false
-            let templateScript = templateContent.querySelector('script')
-            let templateScriptText
-            if (templateScript) {
-                templateScriptText = templateScript.textContent
-                templateScript.remove()
-                mod = true
-            }
+            let promises = []
+            let templateScript = templateContent.querySelectorAll('script')
+            let sharedModules
+            let privateModules
+            if (templateScript.length) {
+                //let templateScriptText = templateScript.textContent
+                sharedModules = [...templateScript].filter(x=>x.hasAttribute('shared'))
+                privateModules = [...templateScript].filter(x=>!x.hasAttribute('shared'))
 
+                sharedModules = sharedModules.reduce((t,m) => { return t+m.text }, '')
+                privateModules = privateModules.reduce((t,m) => { return t+m.text }, '')
+
+                sharedModules && blobify(sharedModules, true)
+
+                templateScript.forEach(s=>s.remove())
+            }
+            // for attaching scripts in templates as modules on components
+            function blobify(code, shared=false) {
+                // a way to make host refer to the component inside the module
+                let deviousHook = !shared ? `let host; export function ewokAttachHost(){host = this};
+                ` : ''
+                let blob = new Blob([deviousHook + code], {type: 'application/javascript'})
+                promises[1+shared] =  import(URL.createObjectURL(blob))
+                URL.revokeObjectURL(blob)
+            }
 
 
             //console.debug("🚩 "+elementName);
@@ -110,6 +127,8 @@ const Ewok = {
                 }
 
 
+            ///////////////////////////////////////////////////////////////////                
+
                 connectedCallback() {
 
                     let event = new Event('connecting', {node: this});
@@ -135,21 +154,21 @@ const Ewok = {
                     
                     // this block handles 'temp' (placeholder) elements
                     // and 'hasty' elements
-                    let hasty = false //this.hasAttribute('hasty')
                     let temp = clone.querySelector('[temp]')
-                    if (hasty) {
-                        injectContent.apply(this) 
-                        // we just appended the clone so we can't manipulate it any more
-                        // but the later code assumes clone is still active
-                        clone = attachPoint
-                        //if the custom el is hasty but the template has a temp, delete it
-                        temp && temp.remove() && (temp=null)
-                    } else {
+                    // let hasty = this.hasAttribute('hasty')
+                    // if (hasty) {
+                    //     injectContent.apply(this) 
+                    //     // we just appended the clone so we can't manipulate it any more
+                    //     // but the later code assumes clone is still active
+                    //     clone = attachPoint
+                    //     //if the custom el is hasty but the template has a temp, delete it
+                    //     temp && temp.remove() && (temp=null)
+                    // } else {
                         //only non-hasty elements need temp elements
                         //temp element in the custom element overrides any in the template
                         temp = this.querySelector('[temp]') || temp
                         temp && attachPoint.appendChild(temp)
-                    }
+                    // }
                     
                     // make a convenient reference to the root of the custom el on every sub-element
                     clone.querySelectorAll('*').forEach((el) => {
@@ -162,21 +181,22 @@ const Ewok = {
 		                THIS.rejecter = reject;
                     });
 
+                    //components must not be processed before their parent's props are ready
                     let parentPromise = nested ? host.propsReady : null
-                    let promises = [parentPromise]
+                    promises[0] = parentPromise
+                    
+                    //transfer js code from template to element
+                    if (privateModules) { blobify(privateModules) }
 
-                    if (mod) {
-                        let deviousHook = `let host; export function ewokAttachHost(){host = this};
-                        `
-                        //transfer js code from template to element
-                        let blob = new Blob([deviousHook + templateScriptText], {type: 'application/javascript'})
-                        promises.push( import(URL.createObjectURL(blob)) )
-                        URL.revokeObjectURL(blob)                                                                      
-                    }
+                /////////////////////////////////////////////////////////////////  
+
 
                     Promise.all(promises).then((results)=>{
                         
-                        let thismodule = results[1]
+                        let privateModules = results[1]
+                        let sharedModules = results[2]
+                        let thismodule = { ...sharedModules, ...privateModules}
+                        sharedModules && (Ewok.sharedModules[elementName] = sharedModules)
 
                         //SET PROPS
                         let hostProps = nested ? host.props : null
@@ -197,7 +217,7 @@ const Ewok = {
                         this.resolver()
 
                         // if component has a module assign 'this' (the component) to the host variable
-                        thismodule && thismodule.ewokAttachHost.apply(this)
+                        privateModules && privateModules.ewokAttachHost.apply(this)
 
                         // interpolate {{variables}} in the template
                         interpolate(clone,this.props)
@@ -233,7 +253,8 @@ const Ewok = {
 
                     function interpolate (attachPoint, props){
                         [...attachPoint.children].forEach((x)=>{
-                            if (x.nodeName != 'SCRIPT'){
+
+                            if (x.nodeName != 'SCRIPT' && !Object.keys(Ewok.classes).includes( x.tagName.toLowerCase() ) ){
                                 let html = x.innerHTML
                                 if ( html && html.includes('{{') ) x.innerHTML = handlebars(html, props)
                                 if ( html && html.includes('{*') ) {
@@ -271,6 +292,7 @@ const Ewok = {
             } //anonymous class
                     
             customElements.define(elementName, Ewok.classes[elementName], ext && {extends: ext})
+            //console.debug("🧾 "+elementName);
             
         } //createTemplate()
 
@@ -301,10 +323,16 @@ const Ewok = {
 
         //get the specified property or nested property of an object
         function getObjPath(path, obj, fallback = '') {
-             return path.split('.').reduce((res, key) => 
-                (typeof res[key]=='function' 
-                 ? res[key]() 
-                 : res[key]) || fallback, obj);
+            if (path[0] == '$') {obj=window; path=path.slice(1)}
+            //if (path[0] == '\\') path=path.slice(1)
+
+            return path.split('.').reduce((res, key) => {              
+                return (typeof res[key]=='function' 
+                    ? res[key]() 
+                    : res[key]) || fallback
+            }
+            , obj);
+            
         }
 
         

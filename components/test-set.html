@@ -1,5 +1,5 @@
 <template id="test-set" extends="section">
-    <script>
+    <script shared>
 
         function clean(str){
             return str.trim().replace(/\n */g,'\n')
@@ -15,6 +15,7 @@
                     this.shadowRoot.querySelector('.example').classList.add('pass')
                 } else {
                     this.shadowRoot.querySelector('.example').classList.add('fail')
+                    this.shadowRoot.querySelector('.example').setAttribute('open', true)
                     console.group(this)
                         console.debug(example)
                         console.debug(expected)
@@ -27,7 +28,8 @@
         * {box-sizing:border-box}
         @media only screen and (min-width: 800px) {
             :host {display: flex; max-width: 80em;}
-            .cell { width: 60%; }
+            .about {width: 40%}
+            .example {width: 60%}
         }
         .cell {
             margin: 5px; 
