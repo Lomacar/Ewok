@@ -152,23 +152,10 @@ const Ewok = {
                     
                     let clone = templateContent.cloneNode(true)
                     
-                    // this block handles 'temp' (placeholder) elements
-                    // and 'hasty' elements
+                    // 'temp' (placeholder) elements
                     let temp = clone.querySelector('[temp]')
-                    // let hasty = this.hasAttribute('hasty')
-                    // if (hasty) {
-                    //     injectContent.apply(this) 
-                    //     // we just appended the clone so we can't manipulate it any more
-                    //     // but the later code assumes clone is still active
-                    //     clone = attachPoint
-                    //     //if the custom el is hasty but the template has a temp, delete it
-                    //     temp && temp.remove() && (temp=null)
-                    // } else {
-                        //only non-hasty elements need temp elements
-                        //temp element in the custom element overrides any in the template
                         temp = this.querySelector('[temp]') || temp
                         temp && attachPoint.appendChild(temp)
-                    // }
                     
                     // make a convenient reference to the root of the custom el on every sub-element
                     clone.querySelectorAll('*').forEach((el) => {
@@ -229,9 +216,8 @@ const Ewok = {
                             el.props = this.props
                         })
 
-                        // for non-hasty elements, now is the time to append the template content
+                        // append the template content
                         // and delete any temp element
-                        //!this.hasAttribute('hasty') && 
                         injectContent.apply(this)
                         this.removeAttribute('loading')
                         
@@ -253,7 +239,6 @@ const Ewok = {
 
                     function interpolate (attachPoint, props){
                         [...attachPoint.children].forEach((x)=>{
-
                             if (x.nodeName != 'SCRIPT' && !Object.keys(Ewok.classes).includes( x.tagName.toLowerCase() ) ){
                                 let html = x.innerHTML
                                 if ( html && html.includes('{{') ) x.innerHTML = handlebars(html, props)
@@ -297,21 +282,7 @@ const Ewok = {
         } //createTemplate()
 
 
-
-        // function fill(data, el){
-        //     let result = ''
-
-        //     if (el.tagName) {
-        //         //el is an element
-        //         result = handlebars(el.innerHTML, data)
-        //     } else if (typeof el === 'string') {
-        //         //el is an attribute
-        //         result = handlebars(el, data)
-        //     }
-            
-        //     return result
-        // }
-
+        
         function handlebars(template, variables, fallback) {
             const regex = /\{\{[^{<"']+}}/g
 
