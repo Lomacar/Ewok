@@ -12,10 +12,10 @@
                     example = example.shadowRoot || example
                     example = clean( extractHTML(example.firstElementChild) || '')
                 if (example == expected) {
-                    this.shadowRoot.querySelector('.example').classList.add('pass')
+                    this.root.querySelector('.example').classList.add('pass')
                 } else {
-                    this.shadowRoot.querySelector('.example').classList.add('fail')
-                    this.shadowRoot.querySelector('.example').setAttribute('open', true)
+                    this.root.querySelector('.example').classList.add('fail')
+                    this.root.querySelector('.example').setAttribute('open', true)
                     console.group(this)
                         console.debug(example)
                         console.debug(expected)

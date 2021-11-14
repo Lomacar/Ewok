@@ -1,9 +1,10 @@
 const Ewok = {
+    options: {noshadow: false, stylesheet: null},
     dependencies: [],
     classes: {},
     sharedModules: {},
     
-    init(options, selection = "template"){
+    init(options=this.options, selection = "template"){
         plates = document.querySelectorAll(selection)
         //get a string list of template IDs like "my-element,custom-picture..."
         let templates = [...plates].map(x=>x.id).filter(x=>x).join(',')
@@ -77,6 +78,7 @@ const Ewok = {
 
                 templateScript.forEach(s=>s.remove())
             }
+
             // for attaching scripts in templates as modules on components
             function blobify(code, shared=false) {
                 // a way to make host refer to the component inside the module
@@ -117,7 +119,7 @@ const Ewok = {
 
                     //console.debug("🏗 "+elementName);
 
-                    if (!this.hasAttribute('noshadow')) {                        
+                    if (!this.hasAttribute('noshadow') && !options?.noshadow) {                        
                         this.attachShadow({mode: 'open'})
                     }           
 
@@ -138,7 +140,8 @@ const Ewok = {
 
                     this.setAttribute('loading', '')
 
-                    let attachPoint = this.shadowRoot || this
+                    let attachPoint = options?.noshadow ? this : this.shadowRoot || this
+                    this.root = attachPoint
                     let host = this.parentElement || this.getRootNode().host
                     let nested = host.hasOwnProperty('props')
 
@@ -157,9 +160,10 @@ const Ewok = {
                         temp = this.querySelector('[temp]') || temp
                         temp && attachPoint.appendChild(temp)
                     
-                    // make a convenient reference to the root of the custom el on every sub-element
+                    // make a convenient reference to the host and parent shadowRoot of the custom el on every sub-element
                     clone.querySelectorAll('*').forEach((el) => {
                         el.host = this
+                        el.root = this.root
                     })
 
                     let THIS = this
@@ -176,7 +180,6 @@ const Ewok = {
                     if (privateModules) { blobify(privateModules) }
 
                 /////////////////////////////////////////////////////////////////  
-
 
                     Promise.all(promises).then((results)=>{
                         
@@ -197,7 +200,7 @@ const Ewok = {
                                 else thisDataset[p] = window[sliced]
                             }
                         }
-                        this.props = {...hostProps, ...thismodule, ...thisDataset}
+                        this.props = this._ = {...hostProps, ...thismodule, ...thisDataset}
 
                         //the parent (if applicable), and the module (if applicable) have been resolved
                         //and props have been set, so resolve self
@@ -213,8 +216,9 @@ const Ewok = {
                         
                         // attach props to every sub-element
                         clone.querySelectorAll('*').forEach((el) => {
-                            el.props = this.props
+                            el.props = el._ = this.props
                         })
+
 
                         // append the template content
                         // and delete any temp element
@@ -300,7 +304,7 @@ const Ewok = {
             return path.split('.').reduce((res, key) => {              
                 return (typeof res[key]=='function' 
                     ? res[key]() 
-                    : res[key]) || fallback
+                    : res[key]) ?? fallback
             }
             , obj);
             
