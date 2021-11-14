@@ -186,10 +186,33 @@
             <test-modules></test-modules>
         </div>
         <template slot="expect">
-            <test-modules><p>Function output: Bilbo Baggins was 111 years old.</p><p>4 × 4 = 16</p><p>Oh hey, I'm a global variable.</p><p>This button calls a function on a private module which uses a variable in a shared module.</p><button id="greeter" onclick="this.props.greet()">Hello, says Bilbo Baggins.</button><br><p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p><input id="foober" type="text" value="foo" onclick="this.props.foobar(this)"></test-modules>
+            <test-modules><p>Function output: Bilbo Baggins was 111 years old.</p><p>4 × 4 = 16</p><p>Oh hey, I'm a global variable.</p><p>This button calls a function on a private module which uses a variable in a shared module.</p><button id="greeter" onclick="this._.greet()">Hello, says Bilbo Baggins.</button><br><p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p><input id="foober" type="text" value="foo" onclick="this._.foobar(this)"></test-modules>
         </template>
     </section>
 
+    <section is="test-set">
+        <p slot="about">Dynamically created sub-modules.</p>
+        <div slot="example">
+            <test-dynamic>
+                <div slot="slot">Here is the test again, nested in a slot in itself.<test-dynamic></test-dynamic></div>
+            </test-dynamic>
+        </div>
+        <template slot="expect">
+            <test-dynamic><p>Number 1</p><div id="fillme"><test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee></div><br><div slot="slot">Here is the test again, nested in a slot in itself.<test-dynamic><p>Number 2</p><div id="fillme"><test-embedee><style>
+            :host {
+            border: 1px solid black;
+            padding: 3px; margin: 3px;
+            display: block;
+            }
+            </style><p>I am nested!</p></test-embedee></div><br></test-dynamic></div></test-dynamic>
+        </template>
+    </section>
 
 
 
@@ -301,8 +324,10 @@
     
     <script src="https://cdn.jsdelivr.net/npm/cash-dom@8.1.0/dist/cash.min.js"></script>
 
-    <script src="../dist/ewok.js"></script>
+    <script src="../src/ewok.js"></script>
     <script>
+        //Ewok.options.noshadow = true;
+
         var testdata = {
             numbers: [1,2,3,4,5],
             person: {

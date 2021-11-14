@@ -112,11 +112,11 @@
         const someFunc = testdata.someFunction.bind(testdata)
         const anotherFunc = ()=>mathSquare(num)
         function mount(){
-            this.shadowRoot.querySelector('#greeter').click()
-            this.shadowRoot.querySelector('#foober').click()
+            this.root.querySelector('#greeter').click()
+            this.root.querySelector('#foober').click()
         }
         export function foobar(el){
-            el.host.shadowRoot.querySelector('#foober').value = this.bar
+            el.host.root.querySelector('#foober').value = this.bar
         }
         
         const greeting = "Hello"
@@ -126,13 +126,31 @@
     <p>{{num}} × {{num}} = {{anotherFunc}}</p>
     <p>{{$globalVar}}</p>
     <p>This button calls a function on a private module which uses a variable in a shared module.</p>
-    <button id="greeter" onclick="this.props.greet()">Click for greeting.</button><br>
+    <button id="greeter" onclick="this._.greet()">Click for greeting.</button><br>
     <p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p>
-    <input id="foober" type="text" value="foo" onclick="this.props.foobar(this)">
+    <input id="foober" type="text" value="foo" onclick="this._.foobar(this)">
     <script>
         export let bar = "bar"
         export function greet() {
-            host.shadowRoot.querySelector('#greeter').innerHTML = `${this.greeting}, says ${name}.`
+            host.root.querySelector('#greeter').innerHTML = `${this.greeting}, says ${name}.`
         }
     </script>
+</template>
+
+<template id="test-dynamic">
+    <script shared>
+        export var num = 1
+        
+        export function mount() {
+            num++
+            setTimeout(()=>{
+                let el = document.createElement('test-embedee')
+                this.root.getElementById('fillme').appendChild(el)
+            },10)
+        }
+    </script>
+    <p>Number {{num}}</p>
+    <div id="fillme"></div>
+    <br>
+    <slot name="slot"></slot>
 </template>
