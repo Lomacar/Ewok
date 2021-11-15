@@ -26,7 +26,7 @@ const Ewok = {
             if (used_ext_templates.size) used_templates = new Set([...used_templates,...used_ext_templates])
         }
 
-        //find subcomponents
+        // find subcomponents
         used_templates.forEach((t) => {
             let frag = document.getElementById(t).content
             let subcomponents = new Set([...frag.querySelectorAll(templates)]
@@ -38,11 +38,21 @@ const Ewok = {
             })
         })
 
-        //get a dependency-ordered list of templates/components
+        // get a dependency-ordered list of templates/components
         let templateDependencies = new Graph([...used_templates], Ewok.dependencies)
         used_templates = topologicalSort(templateDependencies)
 
-        //create the classes to make each custom element work
+        // code that is injected in modules to add references to their host component
+        const hooks = `let host, root, xref, xdata; 
+                        export function EwokAttach(){
+                            host = this
+                            root = host.root
+                            xref = Ewok.xref.bind(root)
+                            xdata = host.xdata
+                        };
+                       `
+
+        // create the classes to make each custom element work
         used_templates.forEach(x=>{createTemplate(x, options)})
     
 
@@ -82,9 +92,8 @@ const Ewok = {
             // for attaching scripts in templates as modules on components
             function blobify(code, shared=false) {
                 // a way to make host refer to the component inside the module
-                let deviousHook = !shared ? `let host; export function ewokAttachHost(){host = this};
-                ` : ''
-                let blob = new Blob([deviousHook + code], {type: 'application/javascript'})
+                let hookcode = !shared ? hooks : ''
+                let blob = new Blob([hookcode + code], {type: 'application/javascript'})
                 promises[1+shared] =  import(URL.createObjectURL(blob))
                 URL.revokeObjectURL(blob)
             }
@@ -125,7 +134,7 @@ const Ewok = {
 
                     //Alpine compatibility
                     //TODO: is this actually necessary?
-                    if (this.hasAttribute('x-data')) Alpine.initTree(this)
+                    //if (this.hasAttribute('x-data') && Alpine) Alpine.initTree(this)
                 }
 
 
@@ -142,7 +151,9 @@ const Ewok = {
 
                     let attachPoint = options?.noshadow ? this : this.shadowRoot || this
                     this.root = attachPoint
+                    this.xref = Ewok.xref.bind(this.root)
                     let host = this.parentElement || this.getRootNode().host
+                    if (typeof Alpine=="object") this.xdata = Alpine.mergeProxies(this._x_dataStack)
                     let nested = host.hasOwnProperty('props')
 
                     //copy attributes from template tag onto custom element
@@ -182,6 +193,7 @@ const Ewok = {
                 /////////////////////////////////////////////////////////////////  
 
                     Promise.all(promises).then((results)=>{
+                        console.debug("✨ "+elementName);
                         
                         let privateModules = results[1]
                         let sharedModules = results[2]
@@ -207,7 +219,7 @@ const Ewok = {
                         this.resolver()
 
                         // if component has a module assign 'this' (the component) to the host variable
-                        privateModules && privateModules.ewokAttachHost.apply(this)
+                        privateModules && privateModules.EwokAttach.apply(this)
 
                         // interpolate {{variables}} in the template
                         interpolate(clone,this.props)
@@ -229,11 +241,11 @@ const Ewok = {
                         if (thismodule && thismodule.mount) thismodule.mount.apply(this, null)
 
                         //Alpine compatibility
-                        alpinify.apply(this)
+                        if (typeof Alpine != "undefined") alpinify.apply(this)
 
+                        console.debug("✅ "+elementName);
                     })                
                     
-                    //console.debug("✅ "+elementName);
 
                     event = new Event('connected', {detail: elementName});
                     event.elem = elementName
@@ -385,6 +397,10 @@ const Ewok = {
             console.warn('🙈 Ewok: '+msg)
         }
 
+    }, // Ewok.init
+
+    xref: function(query){
+        return this.querySelector(`[x-ref=${query}]`)
     }
 }
 

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ewok/Alpine Testing</title>
+</head>
+<body>
+
+    <section is="test-set">
+        <p slot="about">Alpine test.</p>
+        <div slot="example">
+            <div x-data="{your: 'mother'}">
+                <test-alpine x-data="{hello: 'erbody'}"></test-alpine>
+            </div>
+        </div>
+        <template slot="expect">
+            
+        </template>
+    </section>
+
+    
+    <section is="test-set">
+        <p slot="about">Alpine test 2.</p>
+        <div slot="example">
+            <test-alpine2></test-alpine2>
+        </div>
+        <template slot="expect">
+            
+        </template>
+    </section>
+    
+
+    <ewok-import src="components/test-set.html"></ewok-import>
+    <ewok-import src="components/test-alpine-components.html"></ewok-import>
+
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.5.1/dist/cdn.js"></script>
+    <script defer src="../src/ewok.js"></script>
+    <script type="module">
+        import {extractHTML} from './extract-html.js'
+        window['extractHTML'] = extractHTML
+    </script>
+</body>
+</html>

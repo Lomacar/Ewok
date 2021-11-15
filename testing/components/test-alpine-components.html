@@ -1,0 +1,22 @@
+<template id="test-alpine">
+    <script>
+        export const name="Moss"
+
+        export function mount() {
+            xdata.hello = 'nobody'
+            xdata.hey = 'somebody'
+        }
+    </script>
+    <p>
+        <span x-text="$el.props.name"></span>
+    </p>
+</template>
+
+<template id="test-alpine2" x-data>
+    <script>
+        export const name="Bilbo"
+    </script>
+    <p x-data="$el.props">
+        <span x-text="name"></span>
+    </p>
+</template>
