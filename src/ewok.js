@@ -174,7 +174,10 @@ const Ewok = {
                     // make a convenient reference to the host and parent shadowRoot of the custom el on every sub-element
                     clone.querySelectorAll('*').forEach((el) => {
                         el.host = this
-                        el.root = this.root
+                        el.root = this.root;
+                        [...el.getAttributeNames()].forEach(a=>{
+                            el.setAttribute(a, el.getAttribute(a).replace(/~([\w$.]+\(\))/g, 'this.props.$1'));
+                        });
                     })
 
                     let THIS = this
