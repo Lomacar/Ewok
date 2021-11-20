@@ -442,6 +442,34 @@ if ('customElements' in window) {
     customElements.define('ewok-import', EwokImportContent);
 }
 
+
+document.addEventListener('alpine:init', () => {
+    
+    Ewok.Alpine = true
+
+    Ewok.shadowDive(document.body, "template[id]", (m)=>{
+        m.setAttribute("x-ignore","");
+    })
+
+    Alpine.magic('props', (el) => {
+        return el.props
+    })
+    Alpine.magic('host', (el) => {
+        return el.host
+    })
+    Alpine.magic('_', (el) => {
+        return (data=el.props) => {
+            el.tmplt = el.tmplt || el.innerHTML
+            return Ewok.handlebars(el.tmplt, data)
+        }
+    })
+    
 window.onload = function(){
     Ewok.init()
+        Ewok.init = null
+    }
+})
+
+window.onload = function(){
+    !Ewok.Alpine && Ewok.init && Ewok.init()
 }
