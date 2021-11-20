@@ -2,21 +2,35 @@
     <script>
         export const name="Moss"
 
+        export let inc = 101
+
+        
         export function mount() {
+            xdata.inc = 1
+            setInterval(()=>{xdata.inc++;console.log(xdata.inc)},1000)
             xdata.hello = 'nobody'
             xdata.hey = 'somebody'
+            console.log(xdata.your);
         }
     </script>
-    <p>
-        <span x-text="$el.props.name"></span>
+    <p x-data>
+        <!-- <span x-text="$props.name"></span> -->
+        <span x-text="$_">My name is {{name}}. I am {{xdata.hey}}. {{xdata.inc}}</span>
+        <span>My name is {{name}}. I am {{xdata.hey}}. {{xdata.inc}}</span>
+        <!-- <span x-text="hey" onclick="console.log(this.xdata.your)"></span> -->
     </p>
 </template>
 
-<template id="test-alpine2" x-data>
+<template id="test-alpine2">
     <script>
         export const name="Bilbo"
     </script>
-    <p x-data="$el.props">
-        <span x-text="name"></span>
-    </p>
+        <p x-data="$props">
+            <span x-text="name"></span>
+        </p>
+        <div x-data="{neat: 333}">
+            <p x-text="neat"></p>
+            <p>{{xdata.neat}}</p>
+        </div>
+    
 </template>

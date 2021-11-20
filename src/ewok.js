@@ -147,13 +147,12 @@ const Ewok = {
 
                     //console.debug("⚡ "+elementName);
 
-                    this.setAttribute('loading', '')
+                    this.setAttribute('loading', '')                    
 
                     let attachPoint = options?.noshadow ? this : this.shadowRoot || this
                     this.root = attachPoint
                     this.xref = Ewok.xref.bind(this.root)
                     let host = this.parentElement || this.getRootNode().host
-                    if (typeof Alpine=="object") this.xdata = Alpine.mergeProxies(this._x_dataStack)
                     let nested = host.hasOwnProperty('props')
 
                     //copy attributes from template tag onto custom element
@@ -202,6 +201,8 @@ const Ewok = {
 
                 /////////////////////////////////////////////////////////////////  
 
+                    // waiting for modules to resolve for the current component
+                    // and all its parents 
                     Promise.all(promises).then((results)=>{
                         console.debug("✨ "+elementName);
                         
@@ -222,7 +223,9 @@ const Ewok = {
                                 else thisDataset[p] = window[sliced]
                             }
                         }
-                        this.props = this._ = {...hostProps, ...thismodule, ...thisDataset}
+                        this.props = {...hostProps, ...thismodule, ...thisDataset}
+                        if (Ewok.Alpine) this.xdata = Alpine.evaluate(this, '$data')
+                        if (this.xdata) this.props.xdata = this.xdata
 
                         //the parent (if applicable), and the module (if applicable) have been resolved
                         //and props have been set, so resolve self
@@ -230,30 +233,34 @@ const Ewok = {
 
                         // if component has a module assign 'this' (the component) to the host variable
                         privateModules && privateModules.EwokAttach.apply(this)
-
-                        // interpolate {{variables}} in the template
-                        interpolate(clone,this.props)
-                        // interpolate any HTML (slots) in the custom element instance
-                        if (this.shadowRoot) interpolate(this,this.props)
                         
                         // attach props to every sub-element
                         clone.querySelectorAll('*').forEach((el) => {
-                            el.props = el._ = this.props
+                            el.props = this.props
                         })
-
 
                         // append the template content
                         // and delete any temp element
                         injectContent.apply(this)
-                        this.removeAttribute('loading')
                         
                         //run the component's mount function, if present
                         if (thismodule && thismodule.mount) thismodule.mount.apply(this, null)
-
+                        
                         //Alpine compatibility
-                        if (typeof Alpine != "undefined") alpinify.apply(this)
+                        if (Ewok.Alpine){
+                            this.removeAttribute('x-ignore')
+                            Promise.resolve().then( ()=>{ alpinify.apply(this) } )
+                        }
 
-                        console.debug("✅ "+elementName);
+                        // interpolate {{variables}} in the template
+                        interpolate(attachPoint,this.props)
+                        // interpolate any HTML (slots) in the custom element instance
+                        if (this.shadowRoot) interpolate(this,this.props)
+                        
+                        this.removeAttribute('loading')
+                        
+
+                        //console.debug("✅ "+elementName);
                     })                
                     
 
@@ -265,7 +272,9 @@ const Ewok = {
 
                     function interpolate (attachPoint, props){
                         [...attachPoint.children].forEach((x)=>{
-                            if (x.nodeName != 'SCRIPT' && !Object.keys(Ewok.classes).includes( x.tagName.toLowerCase() ) ){
+                            if (x.nodeName != 'SCRIPT' 
+                                && !Object.keys(Ewok.classes).includes( x.tagName.toLowerCase() ) 
+                                && !x.hasAttribute('x-data') ) {
                                 let html = x.innerHTML
                                 if ( html && html.includes('{{') ) x.innerHTML = handlebars(html, props)
                                 if ( html && html.includes('{*') ) {
@@ -293,13 +302,21 @@ const Ewok = {
 
                     function alpinify() {
                         if (this.shadowRoot) {
-                            if (this.closest('[x-data]')) {
-                                Alpine.initTree(this.shadowRoot)
-                            }
+
+                            Alpine.initTree(this);
+
+                            const original_xdata = this.props.xdata;
+                            [...this.shadowRoot.querySelectorAll('[x-data]')]
+                                               .forEach(x=>{
+                                                   Alpine.initTree(x)
+                                                   this.props.xdata = Alpine.evaluate(x, '$data') //Alpine.mergeProxies(x._x_dataStack)
+                                                   interpolate(x,this.props)
+                                                })
+                            this.props.xdata = original_xdata
                         }
                     }
                 }//connectedCallback
-                            
+
             } //anonymous class
                     
             customElements.define(elementName, Ewok.classes[elementName], ext && {extends: ext})
@@ -309,28 +326,8 @@ const Ewok = {
 
 
         
-        function handlebars(template, variables, fallback) {
-            const regex = /\{\{[^{<"']+}}/g
-
-            return template.replace(regex, (match) => {
-                const path = match.slice(2, -2).split('|');
-                return getObjPath( path[0].trim(), variables, path[1] );
-            });
-        }
-
-        //get the specified property or nested property of an object
-        function getObjPath(path, obj, fallback = '') {
-            if (path[0] == '$') {obj=window; path=path.slice(1)}
-            //if (path[0] == '\\') path=path.slice(1)
-
-            return path.split('.').reduce((res, key) => {              
-                return (typeof res[key]=='function' 
-                    ? res[key]() 
-                    : res[key]) ?? fallback
-            }
-            , obj);
-            
-        }
+        const handlebars = Ewok.handlebars
+        const getObjectPath = Ewok.getObjectPath
 
         
 
@@ -408,9 +405,40 @@ const Ewok = {
         }
 
     }, // Ewok.init
+    
+    handlebars: function(template, variables, fallback) {
+        const regex = /\{\{[^{<"']+}}/g
+
+        return template.replace(regex, (match) => {
+            const path = match.slice(2, -2).split('|');
+            return Ewok.getObjPath( path[0].trim(), variables, path[1] );
+        });
+    },
+
+    //get the specified property or nested property of an object
+    getObjPath: function(path, obj, fallback = '') {
+        if (path[0] == '$') {obj=window; path=path.slice(1)}
+        //if (path[0] == '\\') path=path.slice(1)
+        const pathArray = path.split('.')
+        //console.log(obj.self.xdata.neat);
+
+        return pathArray.reduce((res, key) => {              
+            return (typeof res[key]=='function' 
+                ? res[key]() 
+                : res[key]) ?? fallback
+        }
+        , obj);
+        
+    },
 
     xref: function(query){
         return this.querySelector(`[x-ref=${query}]`)
+    },
+
+    shadowDive: function(el, selector, func) {
+        let root = el.shadowRoot || el;
+        root.querySelector(selector) && func(root.querySelector(selector), root);
+        [...root.children].map(el => Ewok.shadowDive(el, selector, func));
     }
 }
 
@@ -471,8 +499,8 @@ document.addEventListener('alpine:init', () => {
         }
     })
     
-window.onload = function(){
-    Ewok.init()
+    window.onload = function(){
+        Ewok.init()
         Ewok.init = null
     }
 })
