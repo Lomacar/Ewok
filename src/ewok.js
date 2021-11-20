@@ -176,7 +176,14 @@ const Ewok = {
                         el.host = this
                         el.root = this.root;
                         [...el.getAttributeNames()].forEach(a=>{
-                            el.setAttribute(a, el.getAttribute(a).replace(/~([\w$.]+\(\))/g, 'this.props.$1'));
+                            let attr = el.getAttribute(a)
+                            let oldattr
+                            do {
+                                oldattr = attr
+                                attr = attr.replace(/~([\w$.]+\(.*\))/g, 'this.props.$1')
+                                
+                            } while (attr != oldattr)
+                            el.setAttribute(a, attr);
                         });
                     })
 
