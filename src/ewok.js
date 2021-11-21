@@ -131,12 +131,7 @@ const Ewok = {
                     if (!this.hasAttribute('noshadow') && !options?.noshadow) {                        
                         this.attachShadow({mode: 'open'})
                     }           
-
-                    //Alpine compatibility
-                    //TODO: is this actually necessary?
-                    //if (this.hasAttribute('x-data') && Alpine) Alpine.initTree(this)
                 }
-
 
             ///////////////////////////////////////////////////////////////////                
 
@@ -270,14 +265,11 @@ const Ewok = {
                         //console.debug("✅ "+elementName);
                     })                
                     
-
                     event = new Event('connected', {detail: elementName});
                     event.elem = elementName
                     window.dispatchEvent(event)
 
                     //// functions //////////////////////////////////////////////////////////////
-
-                    
 
                     function injectContent(){
                         // if Ewok options specifies a stylesheet, insert it
@@ -296,22 +288,43 @@ const Ewok = {
                     function alpinify() {
                         if (this.shadowRoot) {
                             Alpine.initTree(this.shadowRoot);
-                            //recurseToInterpolate(this)
                         }
                         interpolate(attachPoint, this.props)
-                        // function recurseToInterpolate (el) {
-                        //     if (typeof el.props == 'undefined') return
-                            
-                        //     let node = el.shadowRoot || el
-                        //     const xdatas = [...node.querySelectorAll('[x-data]')]
-                            
-                        //     if (xdatas.length) xdatas.forEach(x=>recurseToInterpolate(x))
-                            
-                        //     const original_xdata = el.props.xdata
-                        //     el.props.xdata = Alpine.evaluate(el, '$data')
-                        //     interpolate(el,el.props)
-                        //     el.props.xdata = original_xdata
-                        // }
+                    }
+
+                    function interpolate(node, props){
+                        if (node.nodeName == "#document-fragment") {
+                            for (let child of [...node.childNodes])
+                                interpolate(child, props)
+                            return
+                        }
+                        if (node.nodeName == '#text'){
+                
+                            let text = node.textContent
+                            if ( text.trim() && text.includes('{{') ) node.textContent = Ewok.handlebars(text, props)
+                            if ( text.trim() && text.includes('{*') ) {
+                                // this ridiculous regex removes single astrixes between curly braces
+                                // i.e {**{xyz}**} becomes {*{xyz}*}
+                                node.textContent = node.textContent.replace(/(\{\**)\*(\{)(.*)(\}\**)\*(\})/g, '$1$2$3$4$5')
+                            }
+                
+                        } else if (
+                            node.nodeType == 1 && node.nodeName != 'SCRIPT' &&
+                            // don't go into custom elements (handle them when it's their time)
+                            !Object.keys(Ewok.classes).includes( node.tagName.toLowerCase() )
+                            ) {
+                                let original_xdata = props ? props.xdata : undefined
+                                if (Ewok.Alpine && original_xdata && node.hasAttribute('x-data')) {
+                                    props.xdata = Alpine.evaluate(node, '$data')
+                                }
+                                node.childNodes && [...node.childNodes]
+                                // don't go into elements with x-data (interp them separately)
+                                //.filter(n=>!(n.hasAttribute && !n.hasAttribute('x-data')))
+                                .forEach(n=>{
+                                    interpolate(n,props)
+                                })
+                                props && (props.xdata = original_xdata)
+                        }
                     }
 
                 }//connectedCallback
@@ -332,8 +345,6 @@ const Ewok = {
         
         const handlebars = Ewok.handlebars
         const getObjectPath = Ewok.getObjectPath
-        const interpolate = Ewok.interpolate
-
         
 
         //////////////////////////////////////////////
@@ -410,41 +421,6 @@ const Ewok = {
         }
 
     }, // Ewok.init
-
-    interpolate: function(node, props){
-        if (node.nodeName == "#document-fragment") {
-            for (let child of [...node.childNodes])
-                Ewok.interpolate(child, props)
-            return
-        }
-        if (node.nodeName == '#text'){
-
-            let text = node.textContent
-            if ( text.trim() && text.includes('{{') ) node.textContent = Ewok.handlebars(text, props)
-            if ( text.trim() && text.includes('{*') ) {
-                // this ridiculous regex removes single astrixes between curly braces
-                // i.e {**{xyz}**} becomes {*{xyz}*}
-                node.textContent = node.textContent.replace(/(\{\**)\*(\{)(.*)(\}\**)\*(\})/g, '$1$2$3$4$5')
-            }
-
-        } else if (
-            node.nodeType == 1 && node.nodeName != 'SCRIPT' &&
-            // don't go into custom elements (handle them when it's their time)
-            !Object.keys(Ewok.classes).includes( node.tagName.toLowerCase() )
-            ) {
-                let original_xdata = props ? props.xdata : undefined
-                if (Ewok.Alpine && original_xdata && node.hasAttribute('x-data')) {
-                    props.xdata = Alpine.evaluate(node, '$data')
-                }
-                node.childNodes && [...node.childNodes]
-                // don't go into elements with x-data (interp them separately)
-                //.filter(n=>!(n.hasAttribute && !n.hasAttribute('x-data')))
-                .forEach(n=>{
-                    Ewok.interpolate(n,props)
-                })
-                props && (props.xdata = original_xdata)
-        }
-    },
     
     handlebars: function(template, variables, fallback) {
         const regex = /\{\{[^{<"']+}}/g
@@ -473,12 +449,6 @@ const Ewok = {
 
     xref: function(query){
         return this.querySelector(`[x-ref=${query}]`)
-    },
-
-    shadowDive: function(el, selector, func) {
-        let root = el.shadowRoot || el;
-        root.querySelector(selector) && func(root.querySelector(selector), root);
-        [...root.children].map(el => Ewok.shadowDive(el, selector, func));
     }
 }
 
@@ -521,10 +491,6 @@ if ('customElements' in window) {
 document.addEventListener('alpine:init', () => {
     
     Ewok.Alpine = true
-
-    // Ewok.shadowDive(document.body, "template[id]", (m)=>{
-    //     m.setAttribute("x-ignore","");
-    // })
 
     Alpine.magic('props', (el) => {
         return el.props
