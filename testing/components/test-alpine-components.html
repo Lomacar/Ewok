@@ -1,36 +1,55 @@
-<template id="test-alpine">
+<template id="test-alpine" x-data="{hello: 'aaaaaaaaaaa'}">
     <script>
-        export const name="Moss"
+        export const name="Xyz"
 
         export let inc = 101
-
+        
+        let interval
         
         export function mount() {
             xdata.inc = 1
-            setInterval(()=>{xdata.inc++;console.log(xdata.inc)},1000)
+            interval = setInterval(()=>{xdata.inc++; if (xdata.inc>100) clearInterval(interval)},100)
             xdata.hello = 'nobody'
             xdata.hey = 'somebody'
-            console.log(xdata.your);
+            console.log('xdata changed');
         }
     </script>
-    <p x-data>
+    <style>
+        div {background-color: rgba(202, 168, 168, 0.432);}
+    </style>
+    <div x-data="{hello: 'XXX'}">
         <!-- <span x-text="$props.name"></span> -->
-        <span x-text="$_">My name is {{name}}. I am {{xdata.hey}}. {{xdata.inc}}</span>
-        <span>My name is {{name}}. I am {{xdata.hey}}. {{xdata.inc}}</span>
+        $_
+        <div x-html="$_">My name is {{name}}. I am {{xdata.hello}}. <h2>{{xdata.inc}}</h2></div>
+        x-data, {{}}
+        <div x-data>Behold {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
+        {{}}
+        <div>My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
+        x-text=hello
+        <div x-text="hello"></div>
         <!-- <span x-text="hey" onclick="console.log(this.xdata.your)"></span> -->
-    </p>
+    </div>
+    <article>
+        <h3>Wrapped</h3>
+        <div x-data>
+            <div x-html="$_">My name is {{name}}. I am {{xdata.hello}}. <h2>{{xdata.inc}}</h2></div>
+            <div x-data>My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
+            <div>HEY! My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
+        </div>
+    </article>
 </template>
 
 <template id="test-alpine2">
     <script>
         export const name="Bilbo"
     </script>
-        <p x-data="$props">
-            <span x-text="name"></span>
-        </p>
-        <div x-data="{neat: 333}">
-            <p x-text="neat"></p>
-            <p>{{xdata.neat}}</p>
-        </div>
-    
+
+    <p x-data="$props">
+        <span x-text="name"></span>
+    </p>
+    <div x-data="{neat: 333}">
+        <p x-text="neat+neat"></p>
+        <p>{{xdata.neat}}</p>
+    </div>
+    <slot name="jojo"></slot>
 </template>

@@ -174,6 +174,7 @@ const Ewok = {
                     clone.querySelectorAll('*').forEach((el) => {
                         el.host = this
                         el.root = this.root;
+                        
                         [...el.getAttributeNames()].forEach(a=>{
                             let attr = el.getAttribute(a)
                             let oldattr
@@ -231,8 +232,9 @@ const Ewok = {
                         //and props have been set, so resolve self
                         this.resolver()
 
-                        // if component has a module assign 'this' (the component) to the host variable
-                        privateModules && privateModules.EwokAttach.apply(this)
+                        // connect a bunch of variables inside the private module to the outside
+                        privateModules && privateModules.EwokAttach.apply(this) 
+                                       //&& delete this.EwokAttach
                         
                         // attach props to every sub-element
                         clone.querySelectorAll('*').forEach((el) => {
@@ -242,18 +244,23 @@ const Ewok = {
                         // append the template content
                         // and delete any temp element
                         injectContent.apply(this)
-                        
+
+                            
                         //run the component's mount function, if present
                         if (thismodule && thismodule.mount) thismodule.mount.apply(this, null)
                         
+                        
                         //Alpine compatibility
                         if (Ewok.Alpine){
-                            this.removeAttribute('x-ignore')
-                            Promise.resolve().then( ()=>{ alpinify.apply(this) } )
+                            //Ewok.Alpine && this.removeAttribute('x-ignore')
+                            //Alpine.initTree(this)
+                            alpinify.apply(this)
+                        } else {
+                            // interpolate {{variables}} in the template
+                            // (in the situation above interpolation is called from alpinify())
+                            interpolate(attachPoint,this.props)
                         }
 
-                        // interpolate {{variables}} in the template
-                        interpolate(attachPoint,this.props)
                         // interpolate any HTML (slots) in the custom element instance
                         if (this.shadowRoot) interpolate(this,this.props)
                         
@@ -270,21 +277,7 @@ const Ewok = {
 
                     //// functions //////////////////////////////////////////////////////////////
 
-                    function interpolate (attachPoint, props){
-                        [...attachPoint.children].forEach((x)=>{
-                            if (x.nodeName != 'SCRIPT' 
-                                && !Object.keys(Ewok.classes).includes( x.tagName.toLowerCase() ) 
-                                && !x.hasAttribute('x-data') ) {
-                                let html = x.innerHTML
-                                if ( html && html.includes('{{') ) x.innerHTML = handlebars(html, props)
-                                if ( html && html.includes('{*') ) {
-                                    // this ridiculous regex removes single astrixes between curly braces
-                                    // i.e {**{xyz}**} becomes {*{xyz}*}
-                                    x.innerHTML = x.innerHTML.replace(/(\{\**)\*(\{)(.*)(\}\**)\*(\})/g, '$1$2$3$4$5')
-                                }
-                            }
-                        })
-                    }
+                    
 
                     function injectContent(){
                         // if Ewok options specifies a stylesheet, insert it
@@ -302,21 +295,32 @@ const Ewok = {
 
                     function alpinify() {
                         if (this.shadowRoot) {
-
-                            Alpine.initTree(this);
-
-                            const original_xdata = this.props.xdata;
-                            [...this.shadowRoot.querySelectorAll('[x-data]')]
-                                               .forEach(x=>{
-                                                   Alpine.initTree(x)
-                                                   this.props.xdata = Alpine.evaluate(x, '$data') //Alpine.mergeProxies(x._x_dataStack)
-                                                   interpolate(x,this.props)
-                                                })
-                            this.props.xdata = original_xdata
+                            Alpine.initTree(this.shadowRoot);
+                            //recurseToInterpolate(this)
                         }
+                        interpolate(attachPoint, this.props)
+                        // function recurseToInterpolate (el) {
+                        //     if (typeof el.props == 'undefined') return
+                            
+                        //     let node = el.shadowRoot || el
+                        //     const xdatas = [...node.querySelectorAll('[x-data]')]
+                            
+                        //     if (xdatas.length) xdatas.forEach(x=>recurseToInterpolate(x))
+                            
+                        //     const original_xdata = el.props.xdata
+                        //     el.props.xdata = Alpine.evaluate(el, '$data')
+                        //     interpolate(el,el.props)
+                        //     el.props.xdata = original_xdata
+                        // }
                     }
+
                 }//connectedCallback
 
+                disconnectedCallback(){
+                    console.debug("💥", elementName)
+                    delete this.props
+                }
+                            
             } //anonymous class
                     
             customElements.define(elementName, Ewok.classes[elementName], ext && {extends: ext})
@@ -328,6 +332,7 @@ const Ewok = {
         
         const handlebars = Ewok.handlebars
         const getObjectPath = Ewok.getObjectPath
+        const interpolate = Ewok.interpolate
 
         
 
@@ -405,6 +410,41 @@ const Ewok = {
         }
 
     }, // Ewok.init
+
+    interpolate: function(node, props){
+        if (node.nodeName == "#document-fragment") {
+            for (let child of [...node.childNodes])
+                Ewok.interpolate(child, props)
+            return
+        }
+        if (node.nodeName == '#text'){
+
+            let text = node.textContent
+            if ( text.trim() && text.includes('{{') ) node.textContent = Ewok.handlebars(text, props)
+            if ( text.trim() && text.includes('{*') ) {
+                // this ridiculous regex removes single astrixes between curly braces
+                // i.e {**{xyz}**} becomes {*{xyz}*}
+                node.textContent = node.textContent.replace(/(\{\**)\*(\{)(.*)(\}\**)\*(\})/g, '$1$2$3$4$5')
+            }
+
+        } else if (
+            node.nodeType == 1 && node.nodeName != 'SCRIPT' &&
+            // don't go into custom elements (handle them when it's their time)
+            !Object.keys(Ewok.classes).includes( node.tagName.toLowerCase() )
+            ) {
+                let original_xdata = props ? props.xdata : undefined
+                if (Ewok.Alpine && original_xdata && node.hasAttribute('x-data')) {
+                    props.xdata = Alpine.evaluate(node, '$data')
+                }
+                node.childNodes && [...node.childNodes]
+                // don't go into elements with x-data (interp them separately)
+                //.filter(n=>!(n.hasAttribute && !n.hasAttribute('x-data')))
+                .forEach(n=>{
+                    Ewok.interpolate(n,props)
+                })
+                props && (props.xdata = original_xdata)
+        }
+    },
     
     handlebars: function(template, variables, fallback) {
         const regex = /\{\{[^{<"']+}}/g
@@ -482,9 +522,9 @@ document.addEventListener('alpine:init', () => {
     
     Ewok.Alpine = true
 
-    Ewok.shadowDive(document.body, "template[id]", (m)=>{
-        m.setAttribute("x-ignore","");
-    })
+    // Ewok.shadowDive(document.body, "template[id]", (m)=>{
+    //     m.setAttribute("x-ignore","");
+    // })
 
     Alpine.magic('props', (el) => {
         return el.props
@@ -494,8 +534,20 @@ document.addEventListener('alpine:init', () => {
     })
     Alpine.magic('_', (el) => {
         return (data=el.props) => {
+            
             el.tmplt = el.tmplt || el.innerHTML
-            return Ewok.handlebars(el.tmplt, data)
+            let processedText
+
+            const original_xdata = data.xdata
+            if (data && data==el.props) {
+                data.xdata = Alpine.evaluate(el, '$data')
+            } else if (!data) {
+                data = Alpine.evaluate(el, '$data')
+            }
+            processedText = Ewok.handlebars(el.tmplt, data)
+            data.xdata = original_xdata
+
+            return processedText
         }
     })
     

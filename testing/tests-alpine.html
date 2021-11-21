@@ -12,7 +12,7 @@
         <p slot="about">Alpine test.</p>
         <div slot="example">
             <div x-data="{your: 'mother'}">
-                <test-alpine x-data="{hello: 'erbody'}"></test-alpine>
+                <test-alpine></test-alpine>
             </div>
         </div>
         <template slot="expect">
@@ -31,8 +31,8 @@
         </template>
     </section>
 
-    <!-- <greet-planet  ></greet-planet>
-    <template id="greet-planet" x-data="{foo: 3, bar:'foo'}" x-effect="$props.junk.narf(bar)">
+    <greet-planet  ></greet-planet>
+    <template id="greet-planet" x-data="{foo: 3, bar:'foo'}">
         <script>
             export const privateVar = "I'll never tell."
     
@@ -52,7 +52,7 @@
             }
         </script>
         
-        <div x-data="{number: 9000}">
+        <div x-data="{number: 9000}" x-effect="$props.junk.narf(bar)">
             <button onclick="~junk.narf(Math.round(~567.3)); ~attackStormtroopers(); console.log(`{{privateVar}}`)">Attack</button>
             <p x-ref="result">{{xdata.number}}</p>
             <p>Kill Count: <span x-ref="count"></span></p>
@@ -63,7 +63,7 @@
             <input type="text" name="" id="" x-model:value="bar">
 
         </div>
-    </template> -->
+    </template>
     
     
     <script type="module">

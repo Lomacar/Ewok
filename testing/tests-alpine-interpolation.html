@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ewok/Alpine Testing</title>
+</head>
+<body>
+    <go-nuts></go-nuts>
+    <template id="go-nuts" x-data="{data:'⚽'}">
+        <script>
+            export const mount = ()=>{
+                console.log("Here's the module.", );
+                //xdata.data = "💎"
+            }
+        </script>
+        <style>
+            div {background-color: rgba(41, 172, 233, 0.26); border: 1px solid blue; padding: 1em}
+        </style>
+        <div>{{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div>{{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div>{{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div>{{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div>{{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div>{{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data>× {{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-html="$_" style="background:maroon">${{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div x-html="$_" style="background:maroon">${{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+          <div x-html="$_" style="background:maroon">${{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div>{{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-data="{data:'✅'}">⚡ {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div x-data>× {{xdata.data}}
+            <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div>{{xdata.data}}
+              <div x-data>× {{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+        <div x-html="$_" style="background:maroon">${{xdata.data}}
+          <div x-data="{data:'✅'}">⚡ {{xdata.data}}
+            <div x-data>× {{xdata.data}}
+              <div>{{xdata.data}}</div>
+            </div>
+          </div>
+        </div>
+      </template>
+    
+    
+    <script type="module">
+        import {extractHTML} from './extract-html.js'
+        window['extractHTML'] = extractHTML
+    </script>
+
+    <script defer src="../src/ewok.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.5.1/dist/cdn.js"></script>
+</body>
+</html>
