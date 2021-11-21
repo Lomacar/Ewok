@@ -146,7 +146,7 @@
             .pass-label, .fail-label {display: none;}
             .example.pass .pass-label, .example.fail .fail-label {display: inline;}
             summary {font-size: 1.2rem;}
-            </style><div class="about cell"><p slot="about">A basic test.</p></div><details class="example cell"><summary><span class="pass-label">PASS</span><span class="fail-label">FAIL</span></summary><div slot="example"><test-1><p>I am basic!</p></test-1></div></details><template slot="expect">
+            </style><div class="about cell"><p slot="about">A basic test.</p></div><details x-data="" class="example cell" x-ref="example"><summary><span class="pass-label">PASS</span><span class="fail-label">FAIL</span></summary><div slot="example"><test-1><p>I am basic!</p></test-1></div></details><template slot="expect">
             <test-1><p>I am basic!</p></test-1>
             </template></section></test-import>
         </template>
@@ -173,10 +173,10 @@
             </test-slots>
         </div>
         <template slot="expect">
-            <test-slots lang="en" data-msg="Hello from the component." data-elmnt="$testdata" data-slotvar="I'm a slotted var, from the parent template."><style>
+            <test-slots data-msg="Hello from the component." data-elmnt="$testdata" data-slotvar="I'm a slotted var, from the parent template." lang="en"><style>
             details, test-slots-2 {border: dotted 1px black; margin: 0.5em; padding: 0.5em; display: block;}
             details[open] summary {border-bottom: 1px solid black; margin-bottom: 0.5em;padding-bottom: 0.5em;}
-            </style><details><summary>This is the test-slot template.</summary>[<span slot="slotty">This is a mighty fine slot.</span>]</details><test-slots-2 data-slotvarcomp="This is from a var on the component." data-slotvardefault="I am a var in the default content of an unslotted slot. Weird."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">I am slotted!</span>]</div><div>Slot 2 [<span slot="slot2">I'm a slotted var, from the parent template.</span>]</div><div>Slot 3 [<span slot="slot3">This is from a var on the component. - I'm a module variable from test-slots-2</span>]</div><div>Slot 4 [<span slot="slot4">test-slots-2 nested in test-slots-2!...<test-slots-2 data-slotvarcomp="This is from a var on the NESTED component."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">This is from a var on the NESTED component.</span>]</div><div>Slot 2 [<span slot="slot2">I'm a module variable from test-slots-2</span>]</div><div>Slot 3 [<span slot="slot3">intentionally blank</span>]</div><div>Slot 4 [<span slot="slot4">intentionally blank</span>]</div><div>Slot 99 [fallback]</div></details></test-slots-2></span>]</div><div>Slot 99 [I am a var in the default content of an unslotted slot. Weird.]</div></details></test-slots-2></test-slots>
+            </style><details><summary>This is the test-slot template.</summary>[<span slot="slotty">This is a mighty fine slot.</span>]</details><test-slots-2 data-slotvarcomp="This is from a var on the component." data-slotvardefault="I am a var in the default content of an unslotted slot. Weird."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">I am slotted!</span>]</div><div>Slot 2 [<span slot="slot2">I'm a slotted var, from the parent template.</span>]</div><div>Slot 3 [<span slot="slot3">This is from a var on the component. - I'm a module variable from test-slots-2</span>]</div><div>Slot 4 [<span slot="slot4">test-slots-2 nested in test-slots-2!...<test-slots-2 data-slotvarcomp="This is from a var on the NESTED component."><details open=""><summary>This is test-slot-2...</summary><div>Slot 1 [<span slot="slot1">This is from a var on the component.</span>]</div><div>Slot 2 [<span slot="slot2">I'm a module variable from test-slots-2</span>]</div><div>Slot 3 [<span slot="slot3">intentionally blank</span>]</div><div>Slot 4 [<span slot="slot4">intentionally blank</span>]</div><div>Slot 99 [fallback]</div></details></test-slots-2></span>]</div><div>Slot 99 [I am a var in the default content of an unslotted slot. Weird.]</div></details></test-slots-2></test-slots>
         </template>
     </section>
 
@@ -186,7 +186,7 @@
             <test-modules></test-modules>
         </div>
         <template slot="expect">
-            <test-modules><p>Function output: Bilbo Baggins was 111 years old.</p><p>4 × 4 = 16</p><p>Oh hey, I'm a global variable.</p><p>This button calls a function on a private module which uses a variable in a shared module.</p><button id="greeter" onclick="this._.greet()">Hello, says Bilbo Baggins.</button><br><p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p><input id="foober" type="text" value="foo" onclick="this._.foobar(this)"></test-modules>
+            <test-modules><p>Function output: Bilbo Baggins was 111 years old.</p><p>4 × 4 = 16</p><p>Oh hey, I'm a global variable.</p><p>This button calls a function on a private module which uses a variable in a shared module.</p><button id="greeter" onclick="this.props.greet()">Hello, says Bilbo Baggins.</button><br><p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p><input id="foober" type="text" value="foo" onclick="this.props.foobar(this)"></test-modules>
         </template>
     </section>
 

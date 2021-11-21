@@ -71,7 +71,8 @@
         details, test-slots-2 {border: dotted 1px black; margin: 0.5em; padding: 0.5em; display: block;}
         details[open] summary {border-bottom: 1px solid black; margin-bottom: 0.5em;padding-bottom: 0.5em;}
     </style>
-    <details><summary>This is the test-slot template.</summary>
+    <details>
+        <summary>This is the test-slot template.</summary>
         [ <slot name="slotty">Default content.</slot> ]
     </details>
     <test-slots-2 data-slotvarcomp="This is from a var on the component." 
@@ -81,8 +82,8 @@
         <span slot="slot3">{{ slotvarcomp }} - {{modvar}}</span>
         <span slot="slot4">test-slots-2 nested in test-slots-2!...
             <test-slots-2 data-slotvarcomp="This is from a var on the NESTED component.">
-                <span slot="slot1">{*{ slotvarcomp }*}</span>
-                <span slot="slot2">{*{modvar}*}</span>
+                <span slot="slot1">{{ slotvarcomp }}</span>
+                <span slot="slot2">{{modvar}}</span>
                 <span slot="slot3">intentionally blank</span>
                 <span slot="slot4">intentionally blank</span>
             </test-slots-2>
