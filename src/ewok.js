@@ -170,15 +170,18 @@ const Ewok = {
                         el.host = this
                         el.root = this.root;
                         
-                        [...el.getAttributeNames()].forEach(a=>{
-                            let attr = el.getAttribute(a)
+                        [...el.attributes].forEach(a=>{
+                            let attr = a.value
+                            // don't bother with Alpine attributes
+                            if (/^(@|:|x-)/.test(a.name)) return
+
                             let oldattr
                             do {
                                 oldattr = attr
                                 attr = attr.replace(/~([\w$.]+\(.*\))/g, 'this.props.$1')
                                 
                             } while (attr != oldattr)
-                            el.setAttribute(a, attr);
+                            el.setAttribute(a.name, attr);
                         });
                     })
 
@@ -215,8 +218,7 @@ const Ewok = {
                             let v = thisDataset[p]
                             if (v[0]=='$') {
                                 let sliced = v.slice(1)
-                                if (v.includes('.')) thisDataset[p] = getObjPath(sliced, window)
-                                else thisDataset[p] = window[sliced]
+                                thisDataset[p] = Ewok.getObjPath(sliced, window)
                             }
                         }
                         this.props = {...hostProps, ...thismodule, ...thisDataset}
