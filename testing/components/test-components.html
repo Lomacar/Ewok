@@ -26,7 +26,7 @@
     <p>I am imported and nested!</p>
 </template>
 
-<template id="test-interp-3" data-tmplt="$testdata">
+<template id="test-interp-3" data-tmplt="*testdata">
     <script>
         export const msg = "Module message."
 
@@ -125,7 +125,7 @@
     </script>
     <p>{{someFunc}}</p>
     <p>{{num}} × {{num}} = {{anotherFunc}}</p>
-    <p>{{$globalVar}}</p>
+    <p>{{*globalVar}}</p>
     <p>This button calls a function on a private module which uses a variable in a shared module.</p>
     <button id="greeter" onclick="~greet()">Click for greeting.</button><br>
     <p>This input calls a function on the SHARED module which uses a variable in the PRIVATE module.</p>

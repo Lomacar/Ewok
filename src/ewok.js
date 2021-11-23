@@ -5,7 +5,7 @@ const Ewok = {
     sharedModules: {},
     
     init(options=this.options, selection = "template"){
-        plates = document.querySelectorAll(selection)
+        let plates = document.querySelectorAll(selection)
         //get a string list of template IDs like "my-element,custom-picture..."
         let templates = [...plates].map(x=>x.id).filter(x=>x).join(',')
         //narrow the list down to a Set of the custom elements used on the page
@@ -13,8 +13,8 @@ const Ewok = {
                                      .map(x=>x.tagName.toLowerCase()))
         
 
-        // Extended Built-in Templates
-        // look for templates that extend built-in html elements                                     
+        // EXTENDED BUILT-IN TEMPLATES
+        // look for templates that extend built-in html elements
         let ext_templates = [...document.querySelectorAll(selection)]
                             .filter(t=>t.hasAttribute('extends'))
                             .map(x=>`[is=${x.id}]`).join(',')
@@ -26,6 +26,7 @@ const Ewok = {
             if (used_ext_templates.size) used_templates = new Set([...used_templates,...used_ext_templates])
         }
 
+        // COMPONENT DEPENDENCY
         // find subcomponents
         used_templates.forEach((t) => {
             let frag = document.getElementById(t).content
@@ -37,7 +38,6 @@ const Ewok = {
                 used_templates.add(sc)
             })
         })
-
         // get a dependency-ordered list of templates/components
         let templateDependencies = new Graph([...used_templates], Ewok.dependencies)
         used_templates = topologicalSort(templateDependencies)
@@ -56,7 +56,7 @@ const Ewok = {
         used_templates.forEach(x=>{createTemplate(x, options)})
     
 
-
+        // CREATE TEMPLATE FUNCTION
         function createTemplate(elementName, options){
             
             const templateElement = document.getElementById(elementName)
@@ -77,7 +77,7 @@ const Ewok = {
             let sharedModules
             let privateModules
             if (templateScript.length) {
-                //let templateScriptText = templateScript.textContent
+                
                 sharedModules = [...templateScript].filter(x=>x.hasAttribute('shared'))
                 privateModules = [...templateScript].filter(x=>!x.hasAttribute('shared'))
 
@@ -89,6 +89,7 @@ const Ewok = {
                 templateScript.forEach(s=>s.remove())
             }
 
+            // MODULE ATTACHER
             // for attaching scripts in templates as modules on components
             function blobify(code, shared=false) {
                 // a way to make host refer to the component inside the module
@@ -101,11 +102,12 @@ const Ewok = {
 
             //console.debug("🚩 "+elementName);
 
-            //get the type of element to extend, if the 'extends' attribute is set on the template
+            // EXTENDED BUILT-IN ELEMENTS
+            // get the type of element to extend, if the 'extends' attribute is set on the template
             const ext = templateAttrs.get('extends')
             let extType
             if (ext) {
-                const invalid = ()=>EwokWarn (`${ext} is not a valid element to extend.`)
+                const invalid = ()=>Ewok.warn (`${ext} is not a valid element to extend.`)
                 try {
                     const extEl = document.createElement(ext)
                     if (extEl.__proto__ == HTMLUnknownElement.prototype){
@@ -120,7 +122,7 @@ const Ewok = {
             }
 
 
-            // Here is the generic custom element class!
+            // THE GENERIC CUSTOM ELEMENT CLASS
             Ewok.classes[elementName] = class extends (extType || HTMLElement) {
 
                 constructor() {
@@ -128,12 +130,12 @@ const Ewok = {
 
                     //console.debug("🏗 "+elementName);
 
-                    if (!this.hasAttribute('noshadow') && !options?.noshadow) {                        
+                    if (!this.hasAttribute('noshadow') && !options?.noshadow) {
                         this.attachShadow({mode: 'open'})
-                    }           
+                    }
                 }
 
-            ///////////////////////////////////////////////////////////////////                
+                /////////////////////////////////////////////////////////////////
 
                 connectedCallback() {
 
@@ -203,7 +205,7 @@ const Ewok = {
                     // waiting for modules to resolve for the current component
                     // and all its parents 
                     Promise.all(promises).then((results)=>{
-                        console.debug("✨ "+elementName);
+                        //console.debug("✨ "+elementName);
                         
                         let privateModules = results[1]
                         let sharedModules = results[2]
@@ -216,7 +218,7 @@ const Ewok = {
                         let thisDataset = {...this.dataset}
                         for (let p in thisDataset) {
                             let v = thisDataset[p]
-                            if (v[0]=='$') {
+                            if (v[0]=='*') {
                                 let sliced = v.slice(1)
                                 thisDataset[p] = Ewok.getObjPath(sliced, window)
                             }
@@ -249,6 +251,7 @@ const Ewok = {
                         
                         //Alpine compatibility
                         Ewok.Alpine && this.shadowRoot && Alpine.initTree(this.shadowRoot)
+
                         
                         // interpolate {{variables}} in the template
                         interpolate(attachPoint,this.props)
@@ -308,7 +311,8 @@ const Ewok = {
                             ) {
                                 let original_xdata = props ? props.xdata : undefined
                                 
-                                if (Ewok.Alpine && original_xdata && node.hasAttribute('x-data')) {
+                                if (Ewok.Alpine && original_xdata 
+                                    && (node.hasAttribute('x-data') || node.hasAttribute('x-for'))) {
                                     // adapt props for the current x-data context
                                     props.xdata = Alpine.evaluate(node, '$data')
                                 }
@@ -412,10 +416,6 @@ const Ewok = {
             return L
         }
 
-        function EwokWarn (msg) {
-            console.warn('🙈 Ewok: '+msg)
-        }
-
     }, // Ewok.init
     
     handlebars: function(template, variables, fallback) {
@@ -429,22 +429,33 @@ const Ewok = {
 
     //get the specified property or nested property of an object
     getObjPath: function(path, obj, fallback = '') {
-        if (path[0] == '$') {obj=window; path=path.slice(1)}
-        //if (path[0] == '\\') path=path.slice(1)
-        const pathArray = path.split('.')
-        //console.log(obj.self.xdata.neat);
+        if (path[0] == '*') {obj=window; path=path.slice(1)}
 
-        return pathArray.reduce((res, key) => {              
+        const pathArray = path.split('.')
+
+        // look in global scope if variable missing in local scope
+        // const first = pathArray.shift()
+        // obj = obj[first] || window[first]
+        
+        let result = pathArray.reduce((res, key) => {              
             return (typeof res[key]=='function' 
                 ? res[key]() 
                 : res[key]) ?? fallback
         }
         , obj);
+        if (Ewok.options.debug && result===''){
+            Ewok.warn(`Interpolation of {{${path}}} failed with no fallback.`)
+        }
+        return result
         
     },
 
     xref: function(query){
         return this.querySelector(`[x-ref=${query}]`)
+    },
+
+    warn: function(msg) {
+        console.warn('🙈 Ewok: '+msg)
     }
 }
 
@@ -496,7 +507,11 @@ document.addEventListener('alpine:init', () => {
     })
     Alpine.magic('_', (el) => {
         return (data=el.props) => {
-            
+            if (!data) {
+                Ewok.warn(`No data passed to $_ at ${el.nodeName}`)
+                return
+            }
+
             el.tmplt = el.tmplt || el.innerHTML
             let processedText
 

@@ -16,7 +16,7 @@ No JavaScript needed to set up! Ewok allows you to design an entire component (m
 
 ## Declare your components with just HTML, and then use.
 
-The `id` of the template is the name of the custom element. (Custom elements need to use the format 'lowercase-lowercase'.)
+The `id` of the template is the name of the custom element. (Custom elements need to be lowercase and have a dash `-`.)
 
 ```html
 <template id="my-element">
@@ -46,10 +46,10 @@ You can use variables in your templates with {{handlebar}} notation. These varia
 <greet-planet data-planet="Hoth" data-temperature="cold"></greet-planet>
 ```
 
-A `^` at the beginning of a data-attribute value indicates that it's a variable found in the global scope.
+An asterisk `*` at the beginning of a data-attribute value indicates that it's a variable found in the global scope.
 
 ```html
-<template id="greet-planet" data-planet="^randomPlanet">
+<template id="greet-planet" data-planet="*randomPlanet">
     <p>
         Hello, {{planet}}.
     </p>
@@ -66,10 +66,10 @@ A `^` at the beginning of a data-attribute value indicates that it's a variable 
 
 <!--**Note:** a data-attribute on a custom element will override a data-attribute from its template if they have the same name.-->
 
-- If the variable in the handlebars begins with '^', like `{{^data}}` then it will be sought in the global scope (without the '^').
-
-- Variables can use dot notation to access deeper properties of objects and arrays, like `{{json.users.0.name}}`. <!--Array indices use a dot, rather than square brackets.--> 
+- If the the handlebars expression begins with '*', like `{{*data}}` then it will be treated as a global variable name.
+- Variables can use dot notation to access deeper properties of objects and arrays, like `{{json.users.0.name}}`.
 - If any part of the chain is a function it will be called, but no arguments can be passed. Do NOT use parentheses after a function name. For example, just use `{{data.calculateResult}}`.
+- A fallback value can be given after a pipe character, in case the desired variable is not found: `{{user.post|Nothing here.}}`
 
 
 
@@ -160,7 +160,7 @@ One nice thing about components is that you can declare CSS inside them and it w
 <crazy-link data-src="foo.html" data-text="I dare you to click me."></crazy-link>
 ```
 
-But what if you *do* want to interfere with styles from the outside? 🤔 For example, what if you want to apply a pre-made CSS theme to your website without having to manually tweak all your hand-crafted components? With Ewok you can inject a common stylesheet into all your components using `Ewok.options.stylesheet = "css/theme.css"` or whatever you call your styles.
+But what if you *do* want to interfere with styles from the outside? 🤔 For example, what if you want to apply a pre-made CSS theme to your website without having to manually tweak all your hand-crafted components? With Ewok you can inject a common stylesheet into all your components using `Ewok.options.stylesheet = "/css/theme.css"` or whatever you call your styles.
 
 
 
@@ -173,7 +173,7 @@ By default, Ewok components use [shadow DOMs](https://developer.mozilla.org/en-U
     <h1>Behold</h1>
     <p>I have no shadow. Styles pass right into me.</p>
     <script>
-        const note="You can still have internal, private scripts like this."
+        export const note="You can still have internal, private scripts like this."
     </script>
     <p>
         Alpine, {{interpolation}} and most other Ewok features still work too.
@@ -187,10 +187,10 @@ By default, Ewok components use [shadow DOMs](https://developer.mozilla.org/en-U
 
 Under development...
 
-| **↓ Context \ Data →**                       | global variables |                   **props**                   |   **x-data**   | **x-ref** | **host**  | **root** |
-| :------------------------------------------- | ---------------- | :-------------------------------------------: | :------------: | :-------: | :-------: | :------: |
-| **{{handlebars}}**                           | {{^*var*}}       |                (use directly)                 |     xdata      |     –     |     –     |    –     |
-| **component script module**                  | (use directly)   |                  host.props                   |     xdata      |   xref    |   host    |   root   |
-| **on[event] attributes** <br />onclick="..." | (use directly)   | this.props<br />~*functionName*()<br />~*var* |     $xdata     | this.xref | this.host |    –     |
-| **Alpine attributes** <br />x-text="..."     | (use directly)   |                    $props                     | (use directly) |   $refs   |   $host   |    –     |
+| **↓ Context \ Data →**                       | global variables |                 **props**                 |       **x-data**       |      **x-ref**       |       **host**       | **root** |
+| :------------------------------------------- | ---------------- | :---------------------------------------: | :--------------------: | :------------------: | :------------------: | :------: |
+| **{{handlebars}}**                           | {{**var*}}       |              (use directly)               |         xdata          |          –           |          –           |    –     |
+| **component script module**                  | (use directly)   |                host.props                 |         xdata          |         xref         |         host         |   root   |
+| **on[event] attributes** <br />onclick="..." | (use directly)   | this.props<br />~*functionName*(), ~*var* | this.xdata<br />~xdata | this.xref<br />~xref | this.host<br />~host |    –     |
+| **Alpine attributes** <br />x-text="..."     | (use directly)   |                  $props                   |     (use directly)     |        $refs         |        $host         |    –     |
 

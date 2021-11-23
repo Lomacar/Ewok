@@ -156,10 +156,10 @@
         <p slot="about">Complicated interpolation</p>
         <div slot="example">
             <!-- Test comment -->
-            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="$testdata"></test-interp-3>
+            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="*testdata"></test-interp-3>
         </div>
         <template slot="expect">
-            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="$testdata" data-tmplt="$testdata" data-foo="Fooey!"><style>
+            <test-interp-3 lang="en" data-msg="Hello from the component." data-elmnt="*testdata" data-tmplt="*testdata" data-foo="Fooey!"><style>
             p {border: 1px solid black; padding: 3px}
             </style><div><h4>A message from the module is overriden by a message from component:</h4><p>Hello from the component.</p><h4>Some data from a global variable referenced on the component:</h4><ul><li>Name: Bilbo Baggins</li><li>Address: Bag End, Hobbiton, Shire, Middle Earth</li><li>Age: 111</li></ul><h4>Some data from a global variable referenced on the template:</h4><p>Numbers: 1,2,3,4,5</p><p>Function output: Bilbo Baggins was 111 years old.</p></div><div><h4>Interpolation of module function in a nested component:</h4><aside><test-interp-embed><p>Nested:<em>(Outer) component lang is en</em></p></test-interp-embed></aside></div></test-interp-3>
         </template>
@@ -327,6 +327,7 @@
     <script src="../src/ewok.js"></script>
     <script>
         //Ewok.options.noshadow = true;
+        Ewok.options.debug = true;
 
         var testdata = {
             numbers: [1,2,3,4,5],
