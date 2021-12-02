@@ -4,34 +4,64 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ewok/Alpine Testing</title>
+    <title>Ewok/Alpine Testing</title>    
 </head>
 <body>
 
+    
+
     <section is="test-set">
-        <p slot="about">Alpine test.</p>
+        <p slot="about">Alpine test, basic.</p>
         <div slot="example">
-            <div x-data="{your: 'mother'}">
-                <test-alpine></test-alpine>
+            <div x-data="{outside: 'This is from outside the custom element.'}">
+                <test-alpine x-data="{on: 'This is from on the element.'}"></test-alpine>
             </div>
         </div>
         <template slot="expect">
-            
+            <div x-data="{outside: 'This is from outside the custom element.'}"><test-alpine x-data="{on: 'This is from on the element.'}"><div x-data="{inside: 'This is from inside the element.'}"><p>x-text outside:<span x-text="outside">This is from outside the custom element.</span></p><p>x-text template:<span x-text="outside">This is from outside the custom element.</span></p><p>x-text on:<span x-text="on">This is from on the element.</span></p><p>x-text inside:<span x-text="inside">This is from inside the element.</span></p><p>x-text module:<span x-text="module">This is from an x-data variable set from the module.</span></p><p>interpolated outside:<span>This is from outside the custom element.</span></p><p>interpolated template:<span>This is from outside the custom element.</span></p><p>interpolated on:<span>This is from on the element.</span></p><p>interpolated inside:<span>This is from inside the element.</span></p><p>interpolated module:<span>This is from an x-data variable set from the module.</span></p><p>$_ interpolated outside:<span x-text="$_">This is from outside the custom element.</span></p><p>$_ interpolated template:<span x-text="$_">This is from outside the custom element.</span></p><p>$_ interpolated on:<span x-text="$_"> This is from on the element. </span></p><p>$_ interpolated inside:<span x-text="$_"> This is from inside the element. </span></p><p>$_ interpolated module:<span x-text="$_"> This is from an x-data variable set from the module. </span></p></div></test-alpine></div>
         </template>
     </section>
 
-    
     <section is="test-set">
         <p slot="about">Alpine test 2.</p>
         <div slot="example">
-            <test-alpine2></test-alpine2>
+            <test-alpine2 data-elem="I'm on the custom element!" data-name="yoyo">
+                <p slot="jojo" onclick="console.log(this.props.name)">{{name}}</p>
+            </test-alpine2>
         </div>
         <template slot="expect">
             
         </template>
     </section>
 
-    <greet-planet  ></greet-planet>
+    <section is="test-set">
+        <p slot="about">For loops.</p>
+        <div slot="example">
+            <test-alpine-loop></test-alpine-loop>
+        </div>
+        <template slot="expect">
+            <test-alpine-loop x-data="{names: ['Luke','Leia','Han','Chewy']}" data-random="sdfhg"><h3>With x-text</h3><template x-for="(name,key) in names">
+            <span x-text="' - '+name" x-inter="+"></span>
+            </template><span x-text="' - '+name" x-inter="+"> - Luke</span><span x-text="' - '+name" x-inter="+"> - Leia</span><span x-text="' - '+name" x-inter="+"> - Han</span><span x-text="' - '+name" x-inter="+"> - Chewy</span><h3>With handlebars</h3><template x-for="name in names">
+            <span x-data=""> - {{xdata.name}}</span>
+            </template><span x-data=""> - Luke</span><span x-data=""> - Leia</span><span x-data=""> - Han</span><span x-data=""> - Chewy</span><h3>With $_</h3><template x-for="name in names">
+            <span x-text="$_($data)"> - {{name}}</span>
+            </template><span x-text="$_($data)"> - Luke</span><span x-text="$_($data)"> - Leia</span><span x-text="$_($data)"> - Han</span><span x-text="$_($data)"> - Chewy</span></test-alpine-loop>
+        </template>
+    </section>
+
+    <section is="test-set">
+        <p slot="about">Nesting components & Alpine</p>
+        <div slot="example">
+            <test-alpine-nest></test-alpine-nest>
+        </div>
+        <template slot="expect">
+            <test-alpine-nest x-data="{answer: 42}"><div><test-alpine-nested x-data="{question: 'What is the meaning of life, the universe, and everything?'}"><p slot="question">Question: What is the meaning of life, the universe, and everything?</p><span>The answer is: 42</span></test-alpine-nested>(Expect: 42)</div><p><test-alpine-nested x-data="{question: 'What is the meaning of life, the universe, and everything?'}"><span>The answer is: 42</span></test-alpine-nested>(Expect: 42)</p><p><test-alpine-nested x-data="{answer: 23}"><span>The answer is: 23</span></test-alpine-nested>(Expect: 23)</p></test-alpine-nest>
+        </template>
+    </section>
+
+    <!-- <greet-planet  >
+    </greet-planet>
     <template id="greet-planet" x-data="{foo: 3, bar:'foo'}">
         <script>
             export const privateVar = "I'll never tell."
@@ -63,22 +93,51 @@
             <input type="text" name="" id="" x-model:value="bar">
 
         </div>
-    </template>
+    </template> -->
     
+
+
+    <ewok-import src="components/test-set.html"></ewok-import>
+    <ewok-import src="components/test-alpine-components.html"></ewok-import>
     
     <script type="module">
         import {extractHTML} from './extract-html.js'
         window['extractHTML'] = extractHTML
+        
     </script>
-    <ewok-import src="components/test-set.html"></ewok-import>
-    <ewok-import src="components/test-alpine-components.html"></ewok-import>
+    
 
-    <script defer src="../src/ewok.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.5.1/dist/cdn.js"></script>
+
     <script>
+        var interv = setInterval( ()=>console.log(">>>", document.querySelector("body > section:nth-child(2) > div > test-alpine2 > p").props.name ), 5 )
+        setTimeout(()=>clearInterval(interv), 2000)
+
         function boo(){
             console.log('BOO!');
         }
+        var planets = ["Endor", "Hoth", "Tatooine", "Bespin"]
+        var randomPlanet = ()=>{return planets[Math.floor(Math.random()*planets.length)]}
+
+        document.addEventListener('alpine:init', (el)=>{
+            Alpine.directive('inter', (el, {expression}) => {
+                let value = Reflect.ownKeys(Alpine.evaluate(el, '$data'))[0]
+                let key   = Reflect.ownKeys(Alpine.evaluate(el, '$data'))[1]
+                
+                value = Alpine.evaluate(el, '$data')[value]
+                key   = Alpine.evaluate(el, '$data')[key]
+
+                if ( key > 0){
+                    console.log(expression, value);
+                    value = expression
+                }
+            })
+        })
+
+        
     </script>
+        <script defer src="../src/ewok.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.5.1/dist/cdn.js"></script>
+
 </body>
+    
 </html>

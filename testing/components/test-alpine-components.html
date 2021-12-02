@@ -1,25 +1,74 @@
-<template id="test-alpine" x-data="{hello: 'aaaaaaaaaaa'}">
-    <script>
-        export const name="Xyz"
-
-        export let inc = 101
-        
-        let interval
-        
+<template id="test-alpine" x-data="{template: 'This is on the teaplate.'}">
+    <script>       
         export function mount() {
-            xdata.inc = 1
-            interval = setInterval(()=>{xdata.inc++; if (xdata.inc>100) clearInterval(interval)},100)
-            xdata.hello = 'nobody'
-            xdata.hey = 'somebody'
-            console.log('xdata changed');
+            xdata.module = 'This is from an x-data variable set from the module.'
         }
     </script>
+    <div x-data="{inside: 'This is from inside the element.'}">
+
+        <p>x-text outside: <span x-text="outside"></span></p>
+        <p>x-text template:<span x-text="outside"></span></p>
+        <p>x-text on:      <span x-text="on"></span></p>
+        <p>x-text inside:  <span x-text="inside"></span></p>
+        <p>x-text module:  <span x-text="module"></span></p>
+
+        <p>interpolated outside: <span>{{xdata.outside}}</span></p>
+        <p>interpolated template:<span>{{xdata.outside}}</span></p>
+        <p>interpolated on:      <span>{{xdata.on}}</span></p>
+        <p>interpolated inside:  <span >{{xdata.inside}}</span></p>
+        <p>interpolated module:  <span>{{xdata.module}}</span></p>
+
+        <p>$_ interpolated outside: <span x-text="$_">{{xdata.outside}}</span></p>
+        <p>$_ interpolated template:<span x-text="$_">{{xdata.outside}}</span></p>
+        <p>$_ interpolated on:      <span x-text="$_"> {{xdata.on}} </span></p>
+        <p>$_ interpolated inside:  <span x-text="$_"> {{xdata.inside}} </span></p>
+        <p>$_ interpolated module:  <span x-text="$_"> {{xdata.module}} </span></p>
+
+    </div>
+        
+</template>
+
+<template id="test-alpine2" data-global="*planets.0" data-template="I'm on the template.">
+    <script>
+        // export let inc = 101
+        
+        // let interval
+        // export function mount() {
+        //     xdata.inc = 1
+        //     interval = setInterval(()=>{xdata.inc++; if (xdata.inc>100) clearInterval(interval)},100)
+        // }
+        export const name="Bilbo"
+
+    </script>
     <style>
-        div {background-color: rgba(202, 168, 168, 0.432);}
+        dt {font-weight: bold}
     </style>
-    <div x-data="{hello: 'XXX'}">
-        <!-- <span x-text="$props.name"></span> -->
-        $_
+
+    <h3>x-data = "$props"</h3>
+    <dl x-data="$props">
+        <dt>global var via interpolation: </dt>
+        <dd>{{global}}</dd>
+
+        <dt>module var via x-text: </dt>
+        <dd x-text="name"></dd>
+
+        <dt>template var via $_: </dt>
+        <dd x-text="$_">{{template}}</dd>
+
+        <dt>element var via x-text:</dt>
+        <dd x-text="elem"></dd>
+    </dl>
+
+    
+    <h3>x-text = "$props.name"</h3>
+    <p><span x-text="$props.name"></span></p>
+    
+    <h3>x-text = "$props.name" in a slot!</h3>
+    <slot name="jojo"></slot>
+    
+    =============
+    <!-- <span x-text="hey" onclick="console.log(this.xdata.your)"></span> -->
+        <!-- $_
         <div x-html="$_">My name is {{name}}. I am {{xdata.hello}}. <h2>{{xdata.inc}}</h2></div>
         x-data, {{}}
         <div x-data>Behold {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
@@ -27,7 +76,6 @@
         <div>My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
         x-text=hello
         <div x-text="hello"></div>
-        <!-- <span x-text="hey" onclick="console.log(this.xdata.your)"></span> -->
     </div>
     <article>
         <h3>Wrapped</h3>
@@ -36,20 +84,43 @@
             <div x-data>My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
             <div>HEY! My name is {{name}}. I am {{xdata.hello}}. {{xdata.inc}}</div>
         </div>
-    </article>
+    </article> -->
 </template>
 
-<template id="test-alpine2">
-    <script>
-        export const name="Bilbo"
-    </script>
+<template id="test-alpine-loop" x-data="{names: ['Luke','Leia','Han','Chewy']}" data-random="sdfhg">
 
-    <p x-data="$props">
-        <span x-text="name"></span>
-    </p>
-    <div x-data="{neat: 333}">
-        <p x-text="neat+neat"></p>
-        <p>{{xdata.neat}}</p>
+    <h3>With x-text</h3>
+    <template x-for="(name,key) in names">
+        <span x-text="' - '+name" x-inter="+"></span>
+    </template>
+
+    <h3>With handlebars</h3>
+    <template x-for="name in names">
+        <span x-data> - {{xdata.name}}</span>
+    </template>
+
+    <h3>With $_</h3>
+    <template x-for="name in names">
+        <span x-text="$_($data)"> - {{name}}</span>
+    </template>
+
+</template>
+
+<template id="test-alpine-nest" x-data="{answer: 42}">
+    <div>
+        <test-alpine-nested>
+            <p slot="question">Question: {{xdata.question}}</p>
+        </test-alpine-nested> (Expect: 42)
     </div>
-    <slot name="jojo"></slot>
+    <p>
+        <test-alpine-nested></test-alpine-nested> (Expect: 42)
+    </p>
+    <p>
+        <test-alpine-nested x-data="{answer: 23}"></test-alpine-nested> (Expect: 23)
+    </p>
+</template>
+
+<template id="test-alpine-nested" x-data="{question: 'What is the meaning of life, the universe, and everything?'}">
+    <slot name="question"></slot>
+    <span>The answer is: {{xdata.answer}}</span>
 </template>
