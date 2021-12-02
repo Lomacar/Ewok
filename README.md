@@ -27,6 +27,9 @@ The `id` of the template is the name of the custom element. (Custom elements nee
 
 <!-- This will contain the contents of the template. -->
 <my-element></my-element>
+
+<!-- This is all you need to get Ewok up and running. -->
+<script src="/js/ewok.js"></script>
 ```
 
 
@@ -131,6 +134,31 @@ Ewok adds a few "magics" to Alpine to make working with components and data easi
 (Examples forthcoming.)
 
 
+## Importing components
+
+You probably don't want to define your all your templates in the same page where you use them! Ewok has it's own component to import your components: `<ewok-import>`. The following is an example of storing common page elements in a `layouts.html` file for re-use across your website.
+
+```html
+<!-- Place this anywhere in document. Even outside the <html> tag seems to work, but probably not advisable! -->
+<ewok-import src="/components/layout.html"></ewok-import>
+
+<body>
+	<page-header></page-header>
+    
+    <page-content title="Welcome">
+    	<section slot="text">
+        	Lorem ipsum dolor sit amet consectetur adipisicing elit. 
+            Natus quas, soluta illum dolor ex nam fugit doloremque, voluptatum repudiandae.
+            Ut pariatur voluptate officiis reprehenderit esse iste impedit mollitia nostrum quos?
+        </section>
+    </page-content>
+    
+    <page-footer></page-footer>
+</body>
+
+```
+
+
 
 ## Styling components
 
@@ -180,17 +208,3 @@ By default, Ewok components use [shadow DOMs](https://developer.mozilla.org/en-U
     </p>
 </template>
 ```
-
-
-
-## Accessing data
-
-Under development...
-
-| **↓ Context \ Data →**                       | global variables |                 **props**                 |       **x-data**       |      **x-ref**       |       **host**       | **root** |
-| :------------------------------------------- | ---------------- | :---------------------------------------: | :--------------------: | :------------------: | :------------------: | :------: |
-| **{{handlebars}}**                           | {{**var*}}       |              (use directly)               |         xdata          |          –           |          –           |    –     |
-| **component script module**                  | (use directly)   |                host.props                 |         xdata          |         xref         |         host         |   root   |
-| **on[event] attributes** <br />onclick="..." | (use directly)   | this.props<br />~*functionName*(), ~*var* | this.xdata<br />~xdata | this.xref<br />~xref | this.host<br />~host |    –     |
-| **Alpine attributes** <br />x-text="..."     | (use directly)   |                  $props                   |     (use directly)     |        $refs         |        $host         |    –     |
-
