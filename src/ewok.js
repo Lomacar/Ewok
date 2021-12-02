@@ -18,10 +18,11 @@ const Ewok = {
         let ext_templates = [...document.querySelectorAll(selection)]
                             .filter(t=>t.hasAttribute('extends'))
                             .map(x=>`[is=${x.id}]`).join(',')
+
         //...and their corresponding use via is="..."
         if (ext_templates) {
             let used_ext_templates = new Set([...document.querySelectorAll(ext_templates)]
-                                         .map(x=>x.getAttribute('is')))            
+                                         .map(x=>x.getAttribute('is')))
             //add the extended templates to the regular templates set
             if (used_ext_templates.size) used_templates = new Set([...used_templates,...used_ext_templates])
         }
@@ -100,7 +101,7 @@ const Ewok = {
             }
 
 
-            //console.debug("🚩 "+elementName);
+            console.debug("🚩 "+elementName);
 
             // EXTENDED BUILT-IN ELEMENTS
             // get the type of element to extend, if the 'extends' attribute is set on the template
@@ -125,32 +126,14 @@ const Ewok = {
             // THE GENERIC CUSTOM ELEMENT CLASS
             Ewok.classes[elementName] = class extends (extType || HTMLElement) {
 
-                constructor() {
-                    super();
-
-                    //console.debug("🏗 "+elementName);
-
-                    if (!this.hasAttribute('noshadow') && !options?.noshadow) {
-                        this.attachShadow({mode: 'open'})
-                    }
-                }
-
-                /////////////////////////////////////////////////////////////////
-
                 connectedCallback() {
 
                     let event = new Event('connecting', {node: this});
                     this.dispatchEvent(event)
 
-                    //console.debug("⚡ "+elementName);
+                    console.debug("⚡ "+elementName);
 
-                    this.setAttribute('loading', '')                    
-
-                    let attachPoint = options?.noshadow ? this : this.shadowRoot || this
-                    this.root = attachPoint
-                    this.xref = Ewok.xref.bind(this.root)
-                    let host = this.parentElement || this.getRootNode().host
-                    let nested = host.hasOwnProperty('props')
+                    this.setAttribute('loading', '')
 
                     //copy attributes from template tag onto custom element
                     //unless that attribute is already set
@@ -159,6 +142,16 @@ const Ewok = {
                             this.setAttribute(a[0], a[1])
                         }
                     }
+
+                    if (!this.hasAttribute('noshadow') && !options?.noshadow) {
+                        this.attachShadow({mode: 'open'})
+                    }
+
+                    let attachPoint = options?.noshadow ? this : this.shadowRoot || this
+                    this.root = attachPoint
+                    this.xref = Ewok.xref.bind(this.root)
+                    let host = this.parentElement || this.getRootNode().host
+                    let nested = host.hasOwnProperty('props')
                     
                     let clone = templateContent.cloneNode(true)
                     
@@ -167,25 +160,7 @@ const Ewok = {
                         temp = this.querySelector('[temp]') || temp
                         temp && attachPoint.appendChild(temp)
                     
-                    // make a convenient reference to the host and parent shadowRoot of the custom el on every sub-element
-                    clone.querySelectorAll('*').forEach((el) => {
-                        el.host = this
-                        el.root = this.root;
-                        
-                        [...el.attributes].forEach(a=>{
-                            let attr = a.value
-                            // don't bother with Alpine attributes
-                            if (/^(@|:|x-)/.test(a.name)) return
-
-                            let oldattr
-                            do {
-                                oldattr = attr
-                                attr = attr.replace(/~([\w$.]+\(.*\))/g, 'this.props.$1')
-                                
-                            } while (attr != oldattr)
-                            el.setAttribute(a.name, attr);
-                        });
-                    })
+                    
 
                     let THIS = this
                     this.propsReady = new Promise(function(resolve, reject){
@@ -205,7 +180,7 @@ const Ewok = {
                     // waiting for modules to resolve for the current component
                     // and all its parents 
                     Promise.all(promises).then((results)=>{
-                        //console.debug("✨ "+elementName);
+                        console.debug("✨ "+elementName);
                         
                         let privateModules = results[1]
                         let sharedModules = results[2]
@@ -227,6 +202,31 @@ const Ewok = {
                         if (Ewok.Alpine) this.xdata = Alpine.evaluate(this, '$data')
                         if (this.xdata) this.props.xdata = this.xdata
 
+                        // make a convenient reference to the host and parent shadowRoot of the custom el on every sub-element
+                    connectThings.call(this, clone)
+                    this.shadowRoot && connectThings.call(this, this)
+                    function connectThings(start){
+                        start.querySelectorAll('*').forEach((el) => {
+                            //el.host = this;
+                            //el.root = attachPoint;
+                            
+                            // replace ~ shorthand with 'this.props'
+                            [...el.attributes].forEach(a=>{
+                                let attr = a.value
+                                // don't bother with Alpine attributes
+                                if (/^(@|:|x-)/.test(a.name)) return
+    
+                                let oldattr
+                                do {
+                                    oldattr = attr
+                                    attr = attr.replace(/~([\w$.]+\(.*\))/g, 'this.props.$1')
+                                    
+                                } while (attr != oldattr)
+                                el.setAttribute(a.name, attr);
+                            });
+                        })
+                    }
+
                         //the parent (if applicable), and the module (if applicable) have been resolved
                         //and props have been set, so resolve self
                         this.resolver()
@@ -239,7 +239,10 @@ const Ewok = {
                         clone.querySelectorAll('*').forEach((el) => {
                             el.props = this.props
                         })
-                        
+                        this.shadowRoot && this.querySelectorAll('*').forEach((el) => {
+                            el.props = this.props
+                        })
+
                         // append the template content
                         // and delete any temp element
                         injectContent.apply(this)
@@ -250,8 +253,9 @@ const Ewok = {
                         
                         
                         //Alpine compatibility
-                        Ewok.Alpine && this.shadowRoot && Alpine.initTree(this.shadowRoot)
-
+                        Ewok.Alpine && !nested && this.shadowRoot && Alpine.initTree(this.shadowRoot)
+                        Ewok.Alpine && this.shadowRoot && Alpine.initTree(this)
+                        
                         
                         // interpolate {{variables}} in the template
                         interpolate(attachPoint,this.props)
@@ -261,7 +265,7 @@ const Ewok = {
                         this.removeAttribute('loading')
                         
 
-                        //console.debug("✅ "+elementName);
+                        console.debug("✅ "+elementName);
                     })                
                     
                     event = new Event('connected', {detail: elementName});
@@ -301,7 +305,7 @@ const Ewok = {
                         } else if (node.nodeType==2) {
 
                             let text = node.value
-                            if ( text.includes('{{') ) node.textContent = Ewok.handlebars(text, props)
+                            if ( text.includes('{{') ) node.value = Ewok.handlebars(text, props)
                             
                         //normal nodes
                         } else if (
@@ -337,7 +341,7 @@ const Ewok = {
             } //anonymous class
                     
             customElements.define(elementName, Ewok.classes[elementName], ext && {extends: ext})
-            //console.debug("🧾 "+elementName);
+            console.debug("🧾 "+elementName);
             
         } //createTemplate()
 
@@ -456,6 +460,12 @@ const Ewok = {
 
     warn: function(msg) {
         console.warn('🙈 Ewok: '+msg)
+    },
+
+    shadowDive: function(el, selector, func) {
+        let root = el.shadowRoot || el;
+        root.querySelector(selector) && func(root.querySelector(selector), root);
+        [...root.children].map(el => Ewok.shadowDive(el, selector, func));
     }
 }
 
@@ -476,28 +486,29 @@ class EwokImportContent extends HTMLElement {
     }
     
     connectedCallback() {
-    this.innerHTML = `
-        <iframe src="${this.path}" loading="${this.loading}" hidden></iframe>
-    `;
-    
-    const frame = this.querySelector('iframe');
-    
-    frame.addEventListener('load', evt => {
-        const children = [...frame.contentDocument.children];
-        children.forEach(child => frame.before(child)); 
-        frame.remove();
-    });
+        this.innerHTML = `
+            <iframe src="${this.path}" loading="${this.loading}" hidden></iframe>
+        `;
+        
+        const frame = this.querySelector('iframe');
+        
+        frame.addEventListener('load', evt => {
+            const children = [...frame.contentDocument.querySelectorAll('template[id]')];
+            children.forEach(child => frame.before(child)); 
+            frame.remove();
+            // console.log('BALETED!');
+        });
     }
 }
+customElements.define('ewok-import', EwokImportContent);
 
-if ('customElements' in window) {
-    customElements.define('ewok-import', EwokImportContent);
-}
+
+
 
 
 document.addEventListener('alpine:init', () => {
+    // console.log("### ALPINE INIT ### ");
     
-    Ewok.Alpine = true
 
     Alpine.magic('props', (el) => {
         return el.props
@@ -528,12 +539,41 @@ document.addEventListener('alpine:init', () => {
         }
     })
     
-    window.onload = function(){
-        Ewok.init()
-        Ewok.init = null
-    }
 })
 
+document.addEventListener('alpine:initialized', () => {
+    
+    Ewok.Alpine = true
+
+
+
+
+
+
+
+
+    // Ewok.shadowDive(document.body, "template[id]", (m)=>{
+    //     m.setAttribute("x-ignore","");
+    // })
+
+    if (document.readyState === "complete") {
+        // console.log("~~~ Ewok INIT  ~~~")
+            Ewok.init() 
+    } else { 
+        window.onload = function(){
+            // console.log("~~~ Ewok INIT window load  ~~~")
+            Ewok.init()
+            Ewok.init = null
+        }
+    }
+
+    
+})
+
+
+
+
 window.onload = function(){
-    !Ewok.Alpine && Ewok.init && Ewok.init()
+    // console.log("~~~ Ewok INIT window load  ~~~")
+    !Ewok.Alpine && Ewok.init()
 }
