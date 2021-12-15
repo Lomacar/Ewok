@@ -60,8 +60,9 @@
 
         }
 
+        // TODO What happens to components if there is a cycle?
         if (index !== graph.nodes.length) {
-            console.warn("Dependecy cycle detected.");
+            console.debug("Dependecy cycle detected.");
         }
 
         return L

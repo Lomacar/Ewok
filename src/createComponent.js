@@ -1,5 +1,5 @@
     // CREATE TEMPLATE FUNCTION
-    function createTemplate(elementName, options){
+    function createComponent(elementName, options){
                 
         const templateElement = document.getElementById(elementName)
         const templateContent = templateElement.content
@@ -85,7 +85,9 @@
                 }
 
                 if (!this.hasAttribute('noshadow') && !options?.noshadow) {
-                    this.attachShadow({mode: 'open'})
+                    //attaching shadow to extended built-in elements doesn't work
+                    if(typeof extType === 'undefined' || extType.name === 'HTMLElement' )
+                        this.attachShadow({mode: 'open'})
                 }
 
                 let attachPoint = options?.noshadow ? this : this.shadowRoot || this
@@ -180,9 +182,7 @@
                     clone.querySelectorAll('*').forEach((el) => {
                         el.props = this.props
                     })
-                    this.shadowRoot && this.querySelectorAll('*').forEach((el) => {
-                        el.props = this.props
-                    })
+                    this.shadowRoot && assignProps(this, this.props)
 
                     // append the template content
                     // and delete any temp element

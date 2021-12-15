@@ -102,3 +102,11 @@
         root.querySelector(selector) && func(root.querySelector(selector), root);
         [...root.children].map(el => shadowDive(el, selector, func));
     }
+    function assignProps(el, props) {
+        for (child of el.children) {
+            if (!customElements.get(child.tagName.toLowerCase())){
+                child.props = props;
+                assignProps(child, props)
+            }
+        }
+    }

@@ -5,7 +5,7 @@
     "main": "dist/ewok.js",
     "scripts": {
         "start": "nodemon --watch src build.js",
-        "min"  : "terser dist/ewok.js -o dist/ewok.min.js"
+        "min": "terser dist/ewok.js -o dist/ewok.min.js"
     },
     "devDependencies": {
         "nodemon": "^2.0.15"

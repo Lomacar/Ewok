@@ -12,7 +12,7 @@
     
     //////// init.js ////////
 
-    function init(options=this.options, selection = "template"){
+    function init(options=Ewok.options, selection = "template"){
         let plates = document.querySelectorAll(selection)
         //get a string list of template IDs like "my-element,custom-picture..."
         let templates = [...plates].map(x=>x.id).filter(x=>x).join(',')
@@ -54,7 +54,7 @@
         
 
         // create the classes to make each custom element work
-        used_templates.forEach(x=>{createTemplate(x, options)})
+        used_templates.forEach(x=>{createComponent(x, options)})
 
     }
     
@@ -68,10 +68,10 @@
     };
     `
 
-    //////// createTemplate.js ////////
+    //////// createComponent.js ////////
 
     // CREATE TEMPLATE FUNCTION
-    function createTemplate(elementName, options){
+    function createComponent(elementName, options){
                 
         const templateElement = document.getElementById(elementName)
         const templateContent = templateElement.content
@@ -157,7 +157,9 @@
                 }
 
                 if (!this.hasAttribute('noshadow') && !options?.noshadow) {
-                    this.attachShadow({mode: 'open'})
+                    //attaching shadow to extended built-in elements doesn't work
+                    if(typeof extType === 'undefined' || extType.name === 'HTMLElement' )
+                        this.attachShadow({mode: 'open'})
                 }
 
                 let attachPoint = options?.noshadow ? this : this.shadowRoot || this
@@ -252,9 +254,7 @@
                     clone.querySelectorAll('*').forEach((el) => {
                         el.props = this.props
                     })
-                    this.shadowRoot && this.querySelectorAll('*').forEach((el) => {
-                        el.props = this.props
-                    })
+                    this.shadowRoot && assignProps(this, this.props)
 
                     // append the template content
                     // and delete any temp element
@@ -406,6 +406,22 @@
         [...root.children].map(el => shadowDive(el, selector, func));
     }
 
+    function treeWalk (el, {selector, func, data}, ...flags){
+        //flags = recur; self, text, shadow, attr, custom
+        flag = new Set(flags)
+
+
+    }
+
+    function assignProps(el, props) {
+        for (child of el.children) {
+            if (!customElements.get(child.tagName.toLowerCase())){
+                child.props = props;
+                assignProps(child, props)
+            }
+        }
+    }
+
     //////// dependency.js ////////
 
     //////////////////////////////////////////////
@@ -470,8 +486,9 @@
 
         }
 
+        // TODO What happens to components if there is a cycle?
         if (index !== graph.nodes.length) {
-            console.warn("Dependecy cycle detected.");
+            console.debug("Dependecy cycle detected.");
         }
 
         return L
@@ -510,7 +527,7 @@
             });
         }
     }
-    customElements.define('ewok-import', EwokImportContent);   
+    customElements.define('ewok-import', EwokImportContent);
     
     
     document.addEventListener('alpine:init', () => {

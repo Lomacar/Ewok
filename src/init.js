@@ -1,4 +1,4 @@
-    function init(options=this.options, selection = "template"){
+    function init(options=Ewok.options, selection = "template"){
         let plates = document.querySelectorAll(selection)
         //get a string list of template IDs like "my-element,custom-picture..."
         let templates = [...plates].map(x=>x.id).filter(x=>x).join(',')
@@ -40,6 +40,6 @@
         
 
         // create the classes to make each custom element work
-        used_templates.forEach(x=>{createTemplate(x, options)})
+        used_templates.forEach(x=>{createComponent(x, options)})
 
     }

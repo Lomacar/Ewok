@@ -22,13 +22,13 @@
     };
     `
 
-    //== createTemplate
+    //== createComponent
 
     //== functions
 
     //== dependency
 
-    //== ewokImporter   
+    //== ewokImporter
     
     
     document.addEventListener('alpine:init', () => {
