@@ -2,9 +2,9 @@
 
 ![](https://cdn.icon-icons.com/icons2/1070/PNG/128/ewok_icon-icons.com_76943.png)
 
-### Working with native web components shouldn't be complicated. Ewok.js is a tiny library with no dependencies that makes web components (a.k.a. custom elements) simple and fun.
+### Working with native web components shouldn't be complicated. Ewok.js is a tiny library with no dependencies that makes web components simple and fun.
 
-No JavaScript needed to set up! Ewok allows you to design an entire component (markup, styling, and scripting) within a single template tag. This allows for a "Single File Component" (SFC) approach. Ewok is designed to work entirely client-side, with no build step necessary; however, for performance you would want to combine your SFCs into one file, or just a few.
+No JavaScript needed to set up! Ewok allows you to design an entire component (markup, styling, and scripting) within a single template tag. This allows for a "Single File Component" (SFC) approach. Ewok is designed to work entirely client-side, with no build step necessary; however, for performance you would probably want to combine your SFCs into one file, or just a few.
 
 ⚠ **Warning**: Ewok is in early development right now and subject to breaking changes.
 
@@ -16,7 +16,7 @@ No JavaScript needed to set up! Ewok allows you to design an entire component (m
 
 ## Declare your components with just HTML, and then use.
 
-The `id` of the template is the name of the custom element. (Custom elements need to be lowercase and have a dash `-`.)
+The `id` of the template matches the name of the custom element. (Custom elements need to be lowercase and have a dash `-`.)
 
 ```html
 <template id="my-element">
@@ -49,7 +49,7 @@ You can use variables in your templates with {{handlebar}} notation. These varia
 <greet-planet data-planet="Hoth" data-temperature="cold"></greet-planet>
 ```
 
-An asterisk `*` at the beginning of a data-attribute value indicates that it's a variable found in the global scope.
+An asterisk `*` at the beginning of a data-attribute value indicates that it is a variable found in the global scope.
 
 ```html
 <template id="greet-planet" data-planet="*randomPlanet">
@@ -70,7 +70,7 @@ An asterisk `*` at the beginning of a data-attribute value indicates that it's a
 <!--**Note:** a data-attribute on a custom element will override a data-attribute from its template if they have the same name.-->
 
 - If the the handlebars expression begins with '*', like `{{*data}}` then it will be treated as a global variable name.
-- Variables can use dot notation to access deeper properties of objects and arrays, like `{{json.users.0.name}}`.
+- Variables can use dot notation to access deeper properties of objects and arrays, like `{{data.users.0.name}}`.
 - If any part of the chain is a function it will be called, but no arguments can be passed. Do NOT use parentheses after a function name. For example, just use `{{data.calculateResult}}`.
 - A fallback value can be given after a pipe character, in case the desired variable is not found: `{{user.post|Nothing here.}}`
 
@@ -95,11 +95,14 @@ You can have a script tag inside your template. This will be treated as a module
         }
     </script>
     
-    <button onclick="~shoot()">Shoot</button>
+    <button onclick="this.props.shoot()">Shoot</button>
     <p x-ref="result"></p>
     <p>Kill Count: <span x-ref="count"></span></p>
 </template>
 ```
+
+- Since scripts are converted to modules, you can use top-level `await` within the component script context.
+- By default every component instance maintains its own copy of the script, and any variables used within. If you want to share Javascript between components of the same type use the ‘shared’ property on the script tag: `<script shared>`. You can have multiple script tags in a component so one could be shared and another could be private.
 
 <!--**Note:** Exported module variables override data-attributes on the *template*, if they have the same name (e.g. `export let name = 'Wicket'` will override `data-name="Widdle"`), but the same data-attribute on the *custom element* overrides everything.-->
 
@@ -155,7 +158,41 @@ You probably don't want to define your all your templates in the same page where
     
     <page-footer></page-footer>
 </body>
+```
 
+
+
+## Extending built-in HTML elements
+
+If you want to make customized versions of regular HTML elements, use `extends` on your template, and `is` on the element you want to customize. 
+
+```html
+<template id="expanding-list" extends="ul">
+    <script>
+        export function mount(){
+
+            let lh = '1.4em'
+            let open = false
+
+            host.style.height = host.style.lineHeight = lh
+
+            host.onclick = ()=>{
+                open = !open
+                host.style.height = open ? host.scrollHeight + "px" : lh;
+            }
+        }
+    </script>
+    <style>
+        ul { transition: all 0.3s; overflow: hidden; }
+    </style>
+</template>
+
+<ul is="expanding-list">
+    <li>Click to open</li>
+    <li>Wicket</li>
+    <li>Widdle</li>
+    <li>Weechee</li>    
+</ul>
 ```
 
 
@@ -192,9 +229,9 @@ But what if you *do* want to interfere with styles from the outside? 🤔 For ex
 
 
 
-## Optional shadowless components
+## Optional ‘shadowless components’ (plain custom elements)
 
-By default, Ewok components use [shadow DOMs](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) (i.e. they have shadow roots). If all you want is a way to re-use code, without all the features—and potential complications—of shadow DOM components, then you can simply tag a template or element instance with the attribute `noshadow`. Or you can turn off shadow roots completely with `Ewok.options.noshadow = true`.
+By default, Ewok components use [shadow DOMs](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_shadow_DOM) (i.e. they have shadow roots). If all you want is a way to re-use HTML, without all the features—and potential complications—of shadow DOM components, then you can simply tag a template or element instance with the attribute `noshadow`. Or you can turn off shadow roots completely with `Ewok.options.noshadow = true`.
 
 ```html
 <template id="shadowless-element" noshadow>
